@@ -1,0 +1,6 @@
+{
+  "appId": "app.iptvcast.player",
+  "appName": "IPTV Cast",
+  "webDir": "www",
+  "android": { "allowMixedContent": true }
+}
