@@ -1,0 +1,88 @@
+name: Android build
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write   # нужно только для публикации GitHub Release по тегу
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      KS_B64: ${{ secrets.KEYSTORE_BASE64 }}
+      KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      KEY_PASS: ${{ secrets.KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Install deps and sync web assets
+        run: |
+          npm ci
+          npx cap sync android
+          chmod +x android/gradlew
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug -Pvc=${{ github.run_number }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: iptv-cast-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+
+      - name: Prepare release signing
+        if: env.KS_B64 != ''
+        run: |
+          echo "$KS_B64" | base64 -d > "$GITHUB_WORKSPACE/android/upload.jks"
+          {
+            echo "storeFile=$GITHUB_WORKSPACE/android/upload.jks"
+            echo "storePassword=$KS_PASS"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASS"
+          } > android/keystore.properties
+
+      - name: Build signed release (AAB + APK)
+        if: env.KS_B64 != ''
+        working-directory: android
+        run: ./gradlew bundleRelease assembleRelease -Pvc=${{ github.run_number }}
+
+      - uses: actions/upload-artifact@v4
+        if: env.KS_B64 != ''
+        with:
+          name: iptv-cast-release
+          path: |
+            android/app/build/outputs/bundle/release/*.aab
+            android/app/build/outputs/apk/release/*.apk
+
+      - name: GitHub Release (по тегу v*)
+        if: env.KS_B64 != '' && startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            android/app/build/outputs/bundle/release/*.aab
+            android/app/build/outputs/apk/release/*.apk

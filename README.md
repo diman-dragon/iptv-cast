@@ -3,21 +3,33 @@
 M3U-плеер: список каналов (WebView) + нативный ExoPlayer (Media3, HLS/TS) + Google Cast на ТВ в локальной сети.
 Приложение **не содержит** каналов/плейлистов — пользователь вводит свой URL.
 
-## Сборка
+## Сборка на GitHub (основной способ)
+Папка `android/` уже в репозитории, иконки сгенерированы. Достаточно залить всё в репозиторий:
+```
+git init && git add . && git commit -m init
+git branch -M main && git remote add origin <url> && git push -u origin main
+```
+Actions → **Android build** соберёт debug APK (артефакт `iptv-cast-debug-apk`) — ставится на телефон напрямую.
+
+Подписанный релиз (AAB для Play + APK): создайте keystore (команда ниже) и добавьте в
+Settings → Secrets and variables → Actions четыре секрета:
+`KEYSTORE_BASE64` (`base64 -w0 upload.jks`), `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`.
+После этого каждый push собирает и AAB; тег `v1.0.0` ещё и публикует GitHub Release.
+versionCode = номер запуска workflow (растёт автоматически, Play это требует).
+
+## Локальная сборка
 Нужно: Node 22+, JDK 21, Android Studio Otter (2025.2.1)+, Android SDK 36.
 ```
-npm run setup          # npm i + cap add android + копирование нативного кода и патчи
-# положите assets/icon-only.png (1024x1024) и assets/splash.png (2732x2732)
-npm run assets && npm run sync
+npm i && npm run sync
+# свои иконки: заменить файлы в assets/ (placeholder сейчас) и `npm run assets`
 npm run open           # Android Studio → Run на устройстве
 ```
-**Сначала замените `app.iptvcast.player`** на свой applicationId (capacitor.config.json, scripts/setup-android.sh,
-native/*.java). `com.example.*` Play не принимает. После публикации менять нельзя.
+**Сначала замените `app.iptvcast.player`** на свой applicationId: capacitor.config.json, android/app/build.gradle (namespace, applicationId), android/app/src/main/AndroidManifest.xml, перенести папку java/app/iptvcast/player и поправить `package` в 5 .java. `com.example.*` Play не принимает. После публикации менять нельзя.
 
 ## Релиз
 1. Keystore: `keytool -genkey -v -keystore upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000`
 2. `android/keystore.properties`: storeFile, storePassword, keyAlias, keyPassword.
-3. В `android/app/build.gradle` увеличивайте versionCode при каждой загрузке.
+3. versionCode задаётся `-Pvc=<число>` (в CI — номер запуска). Локально: `./gradlew bundleRelease -Pvc=2`.
 4. `npm run bundle` → `android/app/build/outputs/bundle/release/app-release.aab`
 5. Play Console → включите Play App Signing, загрузите .aab.
 

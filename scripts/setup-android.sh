@@ -43,5 +43,10 @@ if (ksFile.exists()) {
 }
 '''
     g.write_text(t)
+t=g.read_text()
+if 'findProperty("vc")' not in t:
+    t=t.replace('versionCode 1','versionCode (project.findProperty("vc") ?: "1").toInteger()',1)
+    t+='\nandroid { lint { checkReleaseBuilds = false } }\n'
+    g.write_text(t)
 PY
 echo "Готово. Далее: npm run assets && npm run sync && npm run open"
