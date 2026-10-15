@@ -7,7 +7,7 @@
     "sync": "npx cap sync android",
     "assets": "npx capacitor-assets generate --android",
     "open": "npx cap open android",
-    "bundle": "cd android && ./gradlew bundleRelease -Pvc=1"
+    "bundle": "cd android && ./gradlew bundleRelease"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",

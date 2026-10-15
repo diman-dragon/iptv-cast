@@ -15,7 +15,7 @@ Actions → **Android build** соберёт debug APK (артефакт `iptv-c
 Settings → Secrets and variables → Actions четыре секрета:
 `KEYSTORE_BASE64` (`base64 -w0 upload.jks`), `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`.
 После этого каждый push собирает и AAB; тег `v1.0.0` ещё и публикует GitHub Release.
-versionCode = номер запуска workflow (растёт автоматически, Play это требует).
+versionCode = номер запуска workflow (CI подставляет через sed) (растёт автоматически, Play это требует).
 
 ## Локальная сборка
 Нужно: Node 22+, JDK 21, Android Studio Otter (2025.2.1)+, Android SDK 36.
@@ -29,7 +29,7 @@ npm run open           # Android Studio → Run на устройстве
 ## Релиз
 1. Keystore: `keytool -genkey -v -keystore upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000`
 2. `android/keystore.properties`: storeFile, storePassword, keyAlias, keyPassword.
-3. versionCode задаётся `-Pvc=<число>` (в CI — номер запуска). Локально: `./gradlew bundleRelease -Pvc=2`.
+3. versionCode в `android/app/build.gradle` (в CI подставляется номер запуска workflow). Локально увеличивайте вручную.
 4. `npm run bundle` → `android/app/build/outputs/bundle/release/app-release.aab`
 5. Play Console → включите Play App Signing, загрузите .aab.
 
