@@ -1,0 +1,40 @@
+// Подпись сборок.
+//
+// Ключ app/debug.keystore ПУБЛИЧНЫЙ и лежит в репозитории (пароль android, алиас androiddebugkey).
+// Им подписываются и debug, и release: каждая новая сборка ставится поверх старой, без удаления.
+// Это осознанный выбор для периода разработки: секретов нет.
+//
+// Для настоящей публикации можно подменить ключ, не трогая код: задайте переменные окружения
+// (или файл android/keystore.properties) IPTV_KEYSTORE_FILE, IPTV_KEYSTORE_PASSWORD,
+// IPTV_KEY_ALIAS, IPTV_KEY_PASSWORD, и release-сборка подпишется ими.
+def extraProps = new Properties()
+def extraFile = rootProject.file('keystore.properties')
+if (extraFile.exists()) extraFile.withInputStream { extraProps.load(it) }
+def extra = { String name -> System.getenv(name) ?: extraProps.getProperty(name) }
+
+android {
+    signingConfigs {
+        iptvcast {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+        if (extra('IPTV_KEYSTORE_FILE')) {
+            custom {
+                storeFile file(extra('IPTV_KEYSTORE_FILE'))
+                storePassword extra('IPTV_KEYSTORE_PASSWORD')
+                keyAlias extra('IPTV_KEY_ALIAS')
+                keyPassword extra('IPTV_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.iptvcast
+        }
+        release {
+            signingConfig extra('IPTV_KEYSTORE_FILE') ? signingConfigs.custom : signingConfigs.iptvcast
+        }
+    }
+}

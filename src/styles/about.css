@@ -1,0 +1,100 @@
+/* «О нас»: двойная рамка с золотыми уголками */
+.about {
+  position: relative;
+  margin: 8px 0;
+  padding: 10px;
+  border: 1px solid var(--accent);
+  border-radius: 22px;
+  background: linear-gradient(160deg, var(--accent-soft), transparent 60%);
+}
+
+.about-in {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 26px 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.about-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--accent);
+}
+
+.about-corner.tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; border-top-left-radius: 22px; }
+.about-corner.tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; border-top-right-radius: 22px; }
+.about-corner.bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; border-bottom-left-radius: 22px; }
+.about-corner.br { right: -2px; bottom: -2px; border-left: 0; border-top: 0; border-bottom-right-radius: 22px; }
+
+.about-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.about-ico,
+.about-logo svg {
+  width: 48px;
+  height: 48px;
+}
+
+.about-name {
+  margin: 6px 0 0;
+  font-size: 26px;
+  letter-spacing: 0.02em;
+}
+
+.about-tag {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.about-ver {
+  padding: 3px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.about-rule {
+  width: 56px;
+  height: 2px;
+  margin: 10px 0 4px;
+  border-radius: 1px;
+  background: var(--accent);
+}
+
+.about-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.about-copy {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.about-ico {
+  display: inline-flex;
+}
+
+.about-ico svg {
+  width: 48px;
+  height: 48px;
+}

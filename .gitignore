@@ -1,5 +1,11 @@
-node_modules/
+node_modules
+dist
+android/.gradle
+android/build
+android/app/build
 android/local.properties
-android/keystore.properties
-*.jks
 *.keystore
+*.jks
+# Публичный ключ подписи нужен в репозитории: с ним APK обновляется поверх старого.
+!android/app/debug.keystore
+android/keystore.properties

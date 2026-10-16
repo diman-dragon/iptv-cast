@@ -1,0 +1,30 @@
+/* Токены цвета. Тёмная — AMOLED (чистый чёрный), светлая — холодная бумага. */
+:root,
+:root[data-theme='dark'] {
+  --bg: #000000;
+  --surface: #111318;
+  --surface2: #1a1d25;
+  --text: #f1f3f8;
+  --muted: #8b93a3;
+  --line: #21252d;
+  --accent: #4da3ff;
+  --on-accent: #031428;
+  --accent-soft: color-mix(in srgb, var(--accent) 18%, transparent);
+  --danger: #ff5d63;
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+  --header-h: 44px;
+  --radius: 16px;
+}
+
+:root[data-theme='light'] {
+  --bg: #eef2f8;
+  --surface: #ffffff;
+  --surface2: #f3f6fb;
+  --text: #101828;
+  --muted: #5d687a;
+  --line: #d9e0ea;
+  --accent: #1d6fe0;
+  --on-accent: #ffffff;
+  --danger: #d92d3a;
+  --shadow: 0 8px 28px rgba(16, 24, 40, 0.18);
+}

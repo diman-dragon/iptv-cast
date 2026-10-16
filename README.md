@@ -1,57 +1,73 @@
-# IPTV Cast (Capacitor 8, Android)
+# IPTV Cast
 
-M3U-плеер: список каналов (WebView) + нативный ExoPlayer (Media3, HLS/TS) + Google Cast на ТВ в локальной сети.
-Приложение **не содержит** каналов/плейлистов — пользователь вводит свой URL.
+Плеер ТВ-плейлистов (M3U/M3U8) для Android. Capacitor 8 + Vite, чистый JS.
+Каталог бесплатных публичных плейлистов по типам (спорт, новости, кино, детям, музыка, познание,
+развлечения, лайфстайл, страны и языки), свои плейлисты/файлы/каналы, избранное, история,
+таймер сна, фоновый звук с уведомлением, картинка в картинке и показ на ТВ (Google Cast) по домашней сети.
 
-## Сборка на GitHub (основной способ)
-Папка `android/` уже в репозитории, иконки сгенерированы. Достаточно залить всё в репозиторий:
+Приложение **не содержит каналов**: каталог — это ссылки на открытые списки
+[iptv-org](https://github.com/iptv-org/iptv) и [Free-TV](https://github.com/Free-TV/IPTV).
+
+## Сборка на GitHub
+
+1. Залейте проект в репозиторий (ветка `main`), включая `android/`, `package-lock.json` и
+   **`android/app/debug.keystore`** (публичный ключ подписи).
+2. Actions → **Android build** → артефакт `IPTV-Cast-<версия>`; тот же APK публикуется в Releases
+   (тег `v<версия>`). Секреты не нужны.
+
+### Обновление поверх установленного
+
+Все сборки подписаны одним постоянным публичным ключом `android/app/debug.keystore`
+(пароль `android`, алиас `androiddebugkey`), поэтому новая версия **ставится поверх старой**.
+Версия задаётся только в `package.json`: `0.1.0` → `versionCode 100`. Выпуск обновления:
+
+```bash
+npm run bump        # 0.1.0 -> 0.1.1  (или: npm run bump -- minor)
+git commit -am "0.1.1" && git push
 ```
-git init && git add . && git commit -m init
-git branch -M main && git remote add origin <url> && git push -u origin main
+
+> Ключ публичный намеренно (период разработки). Любой, у кого он есть, может подписать
+> «обновление» вашим ключом. Перед публикацией в Google Play включите Play App Signing
+> и подпишите AAB своим закрытым ключом загрузки: задайте переменные
+> `IPTV_KEYSTORE_FILE`, `IPTV_KEYSTORE_PASSWORD`, `IPTV_KEY_ALIAS`, `IPTV_KEY_PASSWORD`
+> (или файл `android/keystore.properties`) — `release` подпишется ими, код менять не нужно.
+
+## Локально
+
+```bash
+npm install
+npm run dev        # интерфейс в браузере (нативных функций нет)
+npm run sync       # vite build + cap sync
+npm run android    # Android Studio
 ```
-Actions → **Android build** соберёт debug APK (артефакт `iptv-cast-debug-apk`) — ставится на телефон напрямую.
 
-Подписанный релиз (AAB для Play + APK): создайте keystore (команда ниже) и добавьте в
-Settings → Secrets and variables → Actions четыре секрета:
-`KEYSTORE_BASE64` (`base64 -w0 upload.jks`), `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`.
-После этого каждый push собирает и AAB; тег `v1.0.0` ещё и публикует GitHub Release.
-versionCode = номер запуска workflow (CI подставляет через sed) (растёт автоматически, Play это требует).
+Нужны Node 22+, Java 21, Android SDK 36.
 
-## Локальная сборка
-Нужно: Node 22+, JDK 21, Android Studio Otter (2025.2.1)+, Android SDK 36.
-```
-npm i && npm run sync
-# свои иконки: заменить файлы в assets/ (placeholder сейчас) и `npm run assets`
-npm run open           # Android Studio → Run на устройстве
-```
-**Сначала замените `app.iptvcast.player`** на свой applicationId: capacitor.config.json, android/app/build.gradle (namespace, applicationId), android/app/src/main/AndroidManifest.xml, перенести папку java/app/iptvcast/player и поправить `package` в 5 .java. `com.example.*` Play не принимает. После публикации менять нельзя.
+## Как устроено
 
-## Релиз
-1. Keystore: `keytool -genkey -v -keystore upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000`
-2. `android/keystore.properties`: storeFile, storePassword, keyAlias, keyPassword.
-3. versionCode в `android/app/build.gradle` (в CI подставляется номер запуска workflow). Локально увеличивайте вручную.
-4. `npm run bundle` → `android/app/build/outputs/bundle/release/app-release.aab`
-5. Play Console → включите Play App Signing, загрузите .aab.
+| Часть | Файлы |
+|---|---|
+| Оболочка, вкладки, свайпы, «Назад» | `src/app`, `src/ui` |
+| Каталог (75 источников), типы | `src/data/catalog.js`, `src/data/types.js` |
+| Парсер M3U (логотип, группа, User-Agent, Referer) | `src/iptv/parse.js` |
+| Загрузка и кэш плейлистов (IndexedDB) | `src/iptv/playlist.js`, `src/core/kv.js` |
+| Избранное, история, свои источники и каналы | `src/iptv/store.js` |
+| Состояние воспроизведения, ТВ, таймер сна | `src/iptv/playback.js` |
+| Нативный плеер (Media3), Cast, фоновая служба | `android/app/src/main/java/com/iptvcast/app` |
 
-## Чек-лист Google Play (проверено 15.10.2026)
-- [x] targetSdk 36 (Capacitor 8 по умолчанию), minSdk 24. Обязательно для новых приложений и обновлений с 31.08.2026
-- [x] Формат AAB, подпись через Play App Signing
-- [ ] Android 16: edge-to-edge не отключить, predictive back — проверить на устройстве/эмуляторе API 36
-- [ ] 16 KB page size: нативных .so своих нет; проверить итоговый AAB (Android Studio → APK Analyzer / Play Console pre-launch)
-- [ ] Аккаунт разработчика ($25). Личный аккаунт, созданный после 13.11.2023: closed-тест ≥12 тестеров × 14 дней подряд до production (на организацию не распространяется)
-- [ ] Политика конфиденциальности (URL) — шаблон ниже
-- [ ] Data safety: приложение само данные не собирает и не отправляет; плейлист хранится локально (localStorage). Заполняйте по факту
-- [ ] Content rating (анкета), Target audience (18+/не детям), Ads: нет, App access: без логина
-- [ ] Скриншоты (мин. 2 телефона), иконка 512×512, feature graphic 1024×500, описание
-- [ ] **Intellectual property / IPTV**: в описании и скриншотах никаких названий каналов, брендов, ссылок на пиратские плейлисты; в приложении нет встроенных плейлистов; фраза «Приложение не предоставляет контент, пользователь добавляет собственные источники». Плееры без контента проходят ревью, приложения с каналами — блокируются
-- [ ] Permissions: только INTERNET + сетевые для Cast. Лишних («на всякий случай») не добавлять
+Свои источники: вкладка «Каталог» → **Добавить** → ссылка на плейлист, файл M3U или один канал.
+
+## Google Play: чек-лист
+
+- targetSdk 36, minSdk 24, формат AAB.
+- Описание и скриншоты без названий каналов и брендов; в приложении нет встроенных потоков.
+- Политика конфиденциальности (приложение данные не собирает), анкета Data safety, рейтинг, «Нет рекламы».
+- Личный аккаунт разработчика: закрытое тестирование ≥12 тестеров × 14 дней перед production.
+- Проверить на устройстве Android 16: «Назад», доступ к локальной сети для Cast, 16 KB page size.
 
 ## Ограничения Cast
-- Используется Default Media Receiver. Он надёжно играет HLS (.m3u8); «сырой» MPEG-TS по HTTP на многих Chromecast не заработает.
-- ТВ сам забирает поток по URL: источник должен быть доступен из той же сети, что и ТВ (потоки с привязкой к IP телефона/токену не пойдут).
-- Телефон и ТВ — в одной Wi-Fi сети; на Android 16+/17 при запросе доступа к локальной сети разрешите его.
-- Нужны Google Play Services (на устройствах Huawei без GMS Cast недоступен — приложение продолжит работать, кнопка 📺 покажет ошибку).
 
-## Шаблон политики конфиденциальности
-«IPTV Cast не собирает, не передаёт и не продаёт персональные данные. URL плейлиста хранится только на устройстве.
-Приложение подключается к серверам, указанным пользователем, и к устройствам Google Cast в локальной сети. Контакт: <email>.»
+- Используется Default Media Receiver: надёжно играет HLS (`.m3u8`), «сырой» MPEG-TS на многих Chromecast нет.
+- ТВ сам забирает поток по ссылке: источник должен быть доступен из той же сети, и ему нужны CORS-заголовки.
+  Если поток не пошёл — «Открыть в другом приложении» (VLC, DLNA-плееры, приставки).
+- Телефон и ТВ в одной Wi-Fi сети. Нужны сервисы Google Play.

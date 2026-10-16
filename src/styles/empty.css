@@ -1,0 +1,24 @@
+.empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.empty .em {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 8px;
+}
+
+.empty-title {
+  font-weight: 600;
+}
+
+.empty .btn {
+  margin-top: 12px;
+}

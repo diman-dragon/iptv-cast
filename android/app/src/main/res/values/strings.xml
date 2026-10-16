@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">IPTV Cast</string>
     <string name="title_activity_main">IPTV Cast</string>
-    <string name="package_name">app.iptvcast.player</string>
-    <string name="custom_url_scheme">app.iptvcast.player</string>
+    <string name="package_name">com.iptvcast.app</string>
+    <string name="custom_url_scheme">com.iptvcast.app</string>
+    <string name="notif_close">Close</string>
 </resources>

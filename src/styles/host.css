@@ -1,0 +1,36 @@
+.host {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.screen.active {
+  display: block;
+}
+
+.screen.from-right {
+  animation: slide-in-right 0.22s ease-out;
+}
+
+.screen.from-left {
+  animation: slide-in-left 0.22s ease-out;
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(48px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes slide-in-left {
+  from { transform: translateX(-48px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}

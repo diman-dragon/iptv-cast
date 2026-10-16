@@ -1,0 +1,40 @@
+.tabbar {
+  flex: none;
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+
+.tab {
+  flex: 1;
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 14px;
+  color: var(--muted);
+  transition: background 0.15s, color 0.15s;
+}
+
+.tab-icon {
+  display: flex;
+}
+
+.tab-icon svg {
+  width: 25px;
+  height: 25px;
+}
+
+.tab-label {
+  font-size: 11px;
+}
+
+.tab.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}

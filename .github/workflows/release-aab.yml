@@ -1,0 +1,42 @@
+name: Release AAB (Google Play)
+
+# Запускается вручную: Actions → Release AAB → Run workflow.
+# AAB подписывается публичным ключом из репозитория (android/app/debug.keystore): секреты не нужны.
+# Для настоящей публикации задайте секреты IPTV_KEYSTORE_* — см. README.
+on:
+  workflow_dispatch:
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - run: npm ci
+      - run: npm run sync
+
+      - name: Build AAB
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew bundleRelease --no-daemon --stacktrace
+
+      - name: Name the AAB
+        id: aab
+        run: bash .github/scripts/name-aab.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: IPTV-Cast-${{ steps.aab.outputs.version }}-aab
+          path: ${{ steps.aab.outputs.file }}

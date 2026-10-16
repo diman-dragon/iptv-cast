@@ -1,6 +1,7 @@
 {
-  "appId": "app.iptvcast.player",
+  "appId": "com.iptvcast.app",
   "appName": "IPTV Cast",
-  "webDir": "www",
+  "webDir": "dist",
+  "backgroundColor": "#000000",
   "android": { "allowMixedContent": true }
 }

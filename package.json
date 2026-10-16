@@ -1,21 +1,22 @@
 {
   "name": "iptv-cast",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "setup": "npm i && npx cap add android && bash scripts/setup-android.sh",
-    "sync": "npx cap sync android",
-    "assets": "npx capacitor-assets generate --android",
-    "open": "npx cap open android",
-    "bundle": "cd android && ./gradlew bundleRelease"
+    "dev": "vite",
+    "build": "vite build",
+    "sync": "vite build && cap sync android",
+    "android": "cap open android",
+    "bump": "node scripts/bump.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",
+    "@capacitor/app": "^8.0.0",
     "@capacitor/core": "^8.0.0"
   },
   "devDependencies": {
-    "@capacitor/assets": "^3.0.5",
-    "@capacitor/cli": "^8.0.0"
-  },
-  "engines": { "node": ">=22" }
+    "@capacitor/cli": "^8.0.0",
+    "vite": "^7.0.0"
+  }
 }
