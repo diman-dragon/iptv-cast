@@ -137,6 +137,8 @@ export default {
   'set.clearCache': 'Сбросить кэш плейлистов',
   'set.clearHistory': 'Очистить историю',
   'set.cacheCleared': 'Кэш очищен',
+  'set.diag': 'Проверить подключение',
+  'set.diagRunning': 'Проверяем…',
   'set.historyCleared': 'История очищена',
   'settings.version': 'Версия {v}',
 

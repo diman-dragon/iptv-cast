@@ -49,6 +49,7 @@ export function renderChannels() {
   let shown = 0;
   let loading = false;
   let failed = false;
+  let failText = '';
   let seq = 0; // номер последней загрузки: устаревшие ответы отбрасываем
 
   // ---------- верхняя часть
@@ -163,7 +164,11 @@ export function renderChannels() {
     grid = null;
     const v = getView();
     if (loading) return list.replaceChildren(el('div', 'spinner'));
-    if (failed) return list.replaceChildren(createStateBox(ICONS.refresh, 'ch.error', 'ch.errorHint', 'ch.retry', () => load(true)));
+    if (failed) {
+      const box = createStateBox(ICONS.refresh, 'ch.error', 'ch.errorHint', 'ch.retry', () => load(true));
+      box.querySelector('.empty-title').after(el('code', 'err-detail', failText));
+      return list.replaceChildren(box);
+    }
     if (v.mode === 'source' && !v.sourceId) return list.replaceChildren(createStateBox(ICONS.catalog, 'ch.noSource', 'ch.noSourceHint', 'ch.toCatalog', () => navigate('catalog')));
     if (!filtered.length) {
       const key = v.mode === 'fav' ? 'ch.noFav' : v.mode === 'history' ? 'ch.noHistory' : 'ch.noMatch';
@@ -211,9 +216,10 @@ export function renderChannels() {
           const res = await loadSource(source, { force });
           if (mine !== seq) return;
           all = res.channels;
-        } catch {
+        } catch (e) {
           if (mine !== seq) return;
           failed = true;
+          failText = String(e?.message ?? e);
         }
         loading = false;
       }

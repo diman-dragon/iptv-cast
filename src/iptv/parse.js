@@ -23,8 +23,8 @@ export function parseM3u(text) {
         name: (comma >= 0 ? line.slice(comma + 1).trim() : '') || attr(line, 'tvg-name'),
         logo: attr(line, 'tvg-logo'),
         group: attr(line, 'group-title') || group,
-        ua: '',
-        ref: '',
+        ua: attr(line, 'http-user-agent'),
+        ref: attr(line, 'http-referrer') || attr(line, 'http-referer'),
       };
     } else if (line.startsWith('#EXTGRP:')) {
       group = line.slice(8).trim();

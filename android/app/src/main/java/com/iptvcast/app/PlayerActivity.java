@@ -4,6 +4,7 @@ import android.app.PictureInPictureParams;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Pair;
 import android.util.Rational;
 import android.view.WindowManager;
 import androidx.annotation.RequiresApi;
@@ -25,6 +26,10 @@ public class PlayerActivity extends AppCompatActivity {
     view = new PlayerView(this);
     view.setBackgroundColor(0xFF000000);
     view.setKeepScreenOn(true);
+    view.setShowBuffering(PlayerView.SHOW_BUFFERING_ALWAYS);
+    // Без этого мёртвый поток — просто чёрный экран. Теперь видно, что случилось.
+    view.setErrorMessageProvider(
+        e -> Pair.create(0, (CharSequence) (getString(R.string.player_error) + "\n" + e.getErrorCodeName())));
     setContentView(view);
     setTitle(getIntent().getStringExtra("title"));
     hideBars();

@@ -189,3 +189,28 @@
 .data-block .row-actions {
   margin-top: 12px;
 }
+
+.err-detail {
+  display: block;
+  max-width: 100%;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.diag {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}

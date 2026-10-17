@@ -1,10 +1,9 @@
 import { el, button } from '../core/dom.js';
 import { bindText } from '../i18n/bind.js';
 import { t } from '../i18n/i18n.js';
-import { clearMemory } from '../iptv/playlist.js';
 import { kvClear } from '../core/kv.js';
 import { clearHistory, customSources, favorites, getPref, history, onStoreChange, removeSource, setPref } from '../iptv/store.js';
-import { dropSourceData } from '../iptv/playlist.js';
+import { clearMemory, diagnose, dropSourceData } from '../iptv/playlist.js';
 import { createAboutCard } from '../ui/about-card.js';
 import { createField } from '../ui/field.js';
 import { createLangSwitch } from '../ui/lang-switch.js';
@@ -50,7 +49,16 @@ function dataBlock() {
       toast(t('set.historyCleared'));
     }), 'set.clearHistory'),
   );
-  box.append(bindText(el('h3', 'section-title'), 'set.mySources'), list, stats, actions);
+  const diag = el('pre', 'diag');
+  diag.hidden = true;
+  actions.append(
+    bindText(button('btn ghost', async () => {
+      diag.hidden = false;
+      diag.textContent = t('set.diagRunning');
+      diag.textContent = (await diagnose()).join('\n');
+    }), 'set.diag'),
+  );
+  box.append(bindText(el('h3', 'section-title'), 'set.mySources'), list, stats, actions, diag);
   onStoreChange(draw);
   document.addEventListener('langchange', draw);
   draw();

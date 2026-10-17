@@ -137,6 +137,8 @@ export default {
   'set.clearCache': 'Clear playlist cache',
   'set.clearHistory': 'Clear history',
   'set.cacheCleared': 'Cache cleared',
+  'set.diag': 'Check connection',
+  'set.diagRunning': 'Checking…',
   'set.historyCleared': 'History cleared',
   'settings.version': 'Version {v}',
 

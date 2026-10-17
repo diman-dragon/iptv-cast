@@ -5,4 +5,5 @@
     <string name="package_name">com.iptvcast.app</string>
     <string name="custom_url_scheme">com.iptvcast.app</string>
     <string name="notif_close">Close</string>
+    <string name="player_error">Could not play this stream</string>
 </resources>

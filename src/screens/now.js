@@ -132,7 +132,7 @@ export function renderNow() {
       } else logo.append(icon(ICONS.tv, 'now-ico'));
       const err = errorText(S.error);
       status.className = `now-status ${err ? 'bad' : S.playing ? 'live' : ''}`;
-      status.textContent = err || (S.onTv ? t('now.statusTv', { d: S.cast.device }) : S.loading ? t('now.loading') : S.playing ? t('now.live') : t('now.paused'));
+      status.textContent = (err ? `${err} · ${S.error.replace('ERROR_CODE_', '')}` : '') || (S.onTv ? t('now.statusTv', { d: S.cast.device }) : S.loading ? t('now.loading') : S.playing ? t('now.live') : t('now.paused'));
       play.replaceChildren(icon(S.playing ? ICONS.pause : ICONS.play));
       play.classList.toggle('on', S.playing);
       favBtn.classList.toggle('on', isFavorite(ch.url));
