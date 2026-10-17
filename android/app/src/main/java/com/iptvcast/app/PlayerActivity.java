@@ -29,7 +29,7 @@ public class PlayerActivity extends AppCompatActivity {
     view.setShowBuffering(PlayerView.SHOW_BUFFERING_ALWAYS);
     // Без этого мёртвый поток — просто чёрный экран. Теперь видно, что случилось.
     view.setErrorMessageProvider(
-        e -> Pair.create(0, (CharSequence) (getString(R.string.player_error) + "\n" + e.getErrorCodeName())));
+        e -> Pair.create(0, getString(R.string.player_error) + "\n" + e.getErrorCodeName()));
     setContentView(view);
     setTitle(getIntent().getStringExtra("title"));
     hideBars();
