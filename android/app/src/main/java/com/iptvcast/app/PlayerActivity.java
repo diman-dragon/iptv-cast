@@ -13,6 +13,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Toast;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -20,19 +21,28 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
+import androidx.media3.common.C;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
+import androidx.media3.common.Timeline;
+import androidx.media3.common.TrackSelectionParameters;
+import androidx.media3.common.Tracks;
 import androidx.media3.datasource.HttpDataSource;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.TreeSet;
 
 /**
  * The video window: full screen, with a close button, the system Back, transport controls,
@@ -57,6 +67,17 @@ public class PlayerActivity extends AppCompatActivity {
         @Override
         public void onPlaybackStateChanged(int state) {
           if (state == Player.STATE_READY) errorBox.setVisibility(View.GONE);
+          updateLiveUi();
+        }
+
+        @Override
+        public void onTimelineChanged(Timeline timeline, int reason) {
+          updateLiveUi();
+        }
+
+        @Override
+        public void onTracksChanged(Tracks tracks) {
+          updateLiveUi();
         }
 
         @Override
@@ -103,6 +124,16 @@ public class PlayerActivity extends AppCompatActivity {
     view.setShowBuffering(PlayerView.SHOW_BUFFERING_ALWAYS);
     view.setControllerShowTimeoutMs(4000);
     view.setControllerHideOnTouch(true);
+    // «Предыдущий / следующий» — это каналы, они сверху; в нижнем ряду только пауза.
+    view.setShowNextButton(false);
+    view.setShowPreviousButton(false);
+    // Шестерёнка внизу плеера — выбор качества (вместо скорости и звуковых дорожек, они для эфира не нужны).
+    View gear = controlView("exo_settings");
+    if (gear != null) {
+      gear.setVisibility(View.VISIBLE);
+      gear.setContentDescription(getString(R.string.player_quality));
+      gear.setOnClickListener(v -> showQualityDialog());
+    }
     root.addView(
         view, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
@@ -206,6 +237,62 @@ public class PlayerActivity extends AppCompatActivity {
     c.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
   }
 
+  /** A view of the stock player controls, found by its id name (null when this version has none). */
+  private View controlView(String name) {
+    int id = getResources().getIdentifier(name, "id", getPackageName());
+    return id == 0 ? null : view.findViewById(id);
+  }
+
+  /** TV is a live stream: a progress bar and the time make no sense there. Files (VOD) keep them. */
+  private void updateLiveUi() {
+    Player p = view.getPlayer();
+    boolean live = p == null || p.isCurrentMediaItemLive() || p.getDuration() == C.TIME_UNSET;
+    int vis = live ? View.GONE : View.VISIBLE;
+    for (String name : new String[] {"exo_progress", "exo_position", "exo_duration", "exo_time"}) {
+      View v = controlView(name);
+      if (v != null) v.setVisibility(vis);
+    }
+  }
+
+  /** Quality = the highest picture height the player may choose (it still adapts below that). */
+  private void showQualityDialog() {
+    ExoPlayer p = PlayerHolder.get(this);
+    TreeSet<Integer> found = new TreeSet<>(Collections.reverseOrder());
+    for (Tracks.Group g : p.getCurrentTracks().getGroups()) {
+      if (g.getType() != C.TRACK_TYPE_VIDEO) continue;
+      for (int i = 0; i < g.length; i++) {
+        int h = g.getTrackFormat(i).height;
+        if (g.isTrackSupported(i) && h > 0) found.add(h);
+      }
+    }
+    if (found.size() < 2) {
+      Toast.makeText(this, R.string.player_quality_none, Toast.LENGTH_SHORT).show();
+      return;
+    }
+    List<Integer> heights = new ArrayList<>(found);
+    String[] labels = new String[heights.size() + 1];
+    labels[0] = getString(R.string.player_quality_auto);
+    int limit = p.getTrackSelectionParameters().maxVideoHeight; // Integer.MAX_VALUE = auto
+    int checked = 0;
+    for (int i = 0; i < heights.size(); i++) {
+      labels[i + 1] = heights.get(i) + "p";
+      if (heights.get(i) == limit) checked = i + 1;
+    }
+    new AlertDialog.Builder(this)
+        .setTitle(R.string.player_quality)
+        .setSingleChoiceItems(
+            labels,
+            checked,
+            (dialog, which) -> {
+              TrackSelectionParameters.Builder b = p.getTrackSelectionParameters().buildUpon();
+              b.setMaxVideoSize(Integer.MAX_VALUE, which == 0 ? Integer.MAX_VALUE : heights.get(which - 1));
+              p.setTrackSelectionParameters(b.build());
+              dialog.dismiss();
+              view.showController();
+            })
+        .show();
+  }
+
   private void refreshTitle() {
     ChannelQueue.Channel c = ChannelQueue.current();
     titleView.setText(c == null ? "" : c.title);
@@ -276,6 +363,7 @@ public class PlayerActivity extends AppCompatActivity {
     view.setPlayer(p);
     view.showController();
     refreshTitle();
+    updateLiveUi();
     PlaybackException pending = p.getPlayerError();
     if (pending != null) showError(pending);
   }

@@ -13,4 +13,7 @@
     <string name="err_gone">The stream was removed or does not exist</string>
     <string name="err_format">This stream format is not supported</string>
     <string name="err_generic">Could not play this stream</string>
+    <string name="player_quality">Quality</string>
+    <string name="player_quality_auto">Auto</string>
+    <string name="player_quality_none">This stream has a single quality</string>
 </resources>
