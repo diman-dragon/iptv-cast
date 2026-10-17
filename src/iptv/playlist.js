@@ -38,14 +38,17 @@ async function viaFetch(url) {
   return r.text();
 }
 
-// Пробует все способы по очереди; принимает только настоящий плейлист (не HTML-страницу ошибки).
-async function fetchText(url) {
+const isPlaylist = (text) => /#EXTM3U|#EXTINF/i.test(text);
+const isPack = (text) => /^\s*[{[]/.test(text);
+
+// Пробует все способы по очереди; принимает только то, что подходит (не HTML-страницу ошибки).
+async function fetchText(url, accept = isPlaylist) {
   const ways = Capacitor.isNativePlatform() ? [['native', viaNative], ['web', viaFetch]] : [['web', viaFetch]];
   let last;
   for (const [name, way] of ways) {
     try {
       const text = await way(url);
-      if (/#EXTM3U|#EXTINF/i.test(text)) {
+      if (accept(text)) {
         lastVia = name;
         return text;
       }
@@ -57,11 +60,11 @@ async function fetchText(url) {
   throw last;
 }
 
-async function download(url) {
+async function download(url, accept) {
   let last;
   for (const u of candidates(url)) {
     try {
-      return await fetchText(u);
+      return await fetchText(u, accept);
     } catch (e) {
       last = e;
     }
@@ -133,6 +136,12 @@ export async function loadSource(source, { force = false } = {}) {
   remember(source.id, value);
   return { ...value, cached };
 }
+
+// Для «Загрузить»: ссылка может вести и на плейлист (M3U), и на файл подборки (JSON).
+export const downloadAny = (url) => download(url, (text) => isPlaylist(text) || isPack(text));
+
+// Сохранить уже скачанный текст как кэш источника — первое открытие будет мгновенным.
+export const cachePlaylist = (id, text) => kvSet(`pl:${id}`, { time: Date.now(), text });
 
 export const saveFileSource = (id, text) => kvSet(`file:${id}`, text);
 

@@ -1,0 +1,58 @@
+{
+  "format": "iptvcast-pack",
+  "name": "Познание",
+  "playlists": [
+    {
+      "name": {
+        "ru": "Документальные",
+        "en": "Documentary"
+      },
+      "desc": {
+        "ru": "Природа, история, расследования",
+        "en": "Nature, history, investigations"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/documentary.m3u",
+      "type": "docs",
+      "emoji": "🎥"
+    },
+    {
+      "name": {
+        "ru": "Наука",
+        "en": "Science"
+      },
+      "desc": {
+        "ru": "Наука и технологии",
+        "en": "Science and technology"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/science.m3u",
+      "type": "docs",
+      "emoji": "🔬"
+    },
+    {
+      "name": {
+        "ru": "Образование",
+        "en": "Education"
+      },
+      "desc": {
+        "ru": "Обучающие и университетские каналы",
+        "en": "Educational and university channels"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/education.m3u",
+      "type": "docs",
+      "emoji": "🎓"
+    },
+    {
+      "name": {
+        "ru": "Культура",
+        "en": "Culture"
+      },
+      "desc": {
+        "ru": "Искусство, театр, культура",
+        "en": "Art, theatre, culture"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/culture.m3u",
+      "type": "docs",
+      "emoji": "🎻"
+    }
+  ]
+}

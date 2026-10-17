@@ -1,0 +1,422 @@
+{
+  "format": "iptvcast-pack",
+  "name": "Страны",
+  "playlists": [
+    {
+      "name": {
+        "ru": "Россия",
+        "en": "Russia"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Россия",
+        "en": "TV channels: Russia"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/ru.m3u",
+      "type": "world",
+      "emoji": "🇷🇺"
+    },
+    {
+      "name": {
+        "ru": "Украина",
+        "en": "Ukraine"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Украина",
+        "en": "TV channels: Ukraine"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/ua.m3u",
+      "type": "world",
+      "emoji": "🇺🇦"
+    },
+    {
+      "name": {
+        "ru": "Беларусь",
+        "en": "Belarus"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Беларусь",
+        "en": "TV channels: Belarus"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/by.m3u",
+      "type": "world",
+      "emoji": "🇧🇾"
+    },
+    {
+      "name": {
+        "ru": "Казахстан",
+        "en": "Kazakhstan"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Казахстан",
+        "en": "TV channels: Kazakhstan"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/kz.m3u",
+      "type": "world",
+      "emoji": "🇰🇿"
+    },
+    {
+      "name": {
+        "ru": "Молдова",
+        "en": "Moldova"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Молдова",
+        "en": "TV channels: Moldova"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/md.m3u",
+      "type": "world",
+      "emoji": "🇲🇩"
+    },
+    {
+      "name": {
+        "ru": "Армения",
+        "en": "Armenia"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Армения",
+        "en": "TV channels: Armenia"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/am.m3u",
+      "type": "world",
+      "emoji": "🇦🇲"
+    },
+    {
+      "name": {
+        "ru": "Грузия",
+        "en": "Georgia"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Грузия",
+        "en": "TV channels: Georgia"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/ge.m3u",
+      "type": "world",
+      "emoji": "🇬🇪"
+    },
+    {
+      "name": {
+        "ru": "Азербайджан",
+        "en": "Azerbaijan"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Азербайджан",
+        "en": "TV channels: Azerbaijan"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/az.m3u",
+      "type": "world",
+      "emoji": "🇦🇿"
+    },
+    {
+      "name": {
+        "ru": "Сербия",
+        "en": "Serbia"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Сербия",
+        "en": "TV channels: Serbia"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/rs.m3u",
+      "type": "world",
+      "emoji": "🇷🇸"
+    },
+    {
+      "name": {
+        "ru": "Болгария",
+        "en": "Bulgaria"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Болгария",
+        "en": "TV channels: Bulgaria"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/bg.m3u",
+      "type": "world",
+      "emoji": "🇧🇬"
+    },
+    {
+      "name": {
+        "ru": "Польша",
+        "en": "Poland"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Польша",
+        "en": "TV channels: Poland"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/pl.m3u",
+      "type": "world",
+      "emoji": "🇵🇱"
+    },
+    {
+      "name": {
+        "ru": "Чехия",
+        "en": "Czechia"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Чехия",
+        "en": "TV channels: Czechia"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/cz.m3u",
+      "type": "world",
+      "emoji": "🇨🇿"
+    },
+    {
+      "name": {
+        "ru": "Румыния",
+        "en": "Romania"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Румыния",
+        "en": "TV channels: Romania"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/ro.m3u",
+      "type": "world",
+      "emoji": "🇷🇴"
+    },
+    {
+      "name": {
+        "ru": "Греция",
+        "en": "Greece"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Греция",
+        "en": "TV channels: Greece"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/gr.m3u",
+      "type": "world",
+      "emoji": "🇬🇷"
+    },
+    {
+      "name": {
+        "ru": "Турция",
+        "en": "Türkiye"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Турция",
+        "en": "TV channels: Türkiye"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/tr.m3u",
+      "type": "world",
+      "emoji": "🇹🇷"
+    },
+    {
+      "name": {
+        "ru": "Германия",
+        "en": "Germany"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Германия",
+        "en": "TV channels: Germany"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/de.m3u",
+      "type": "world",
+      "emoji": "🇩🇪"
+    },
+    {
+      "name": {
+        "ru": "Франция",
+        "en": "France"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Франция",
+        "en": "TV channels: France"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/fr.m3u",
+      "type": "world",
+      "emoji": "🇫🇷"
+    },
+    {
+      "name": {
+        "ru": "Испания",
+        "en": "Spain"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Испания",
+        "en": "TV channels: Spain"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/es.m3u",
+      "type": "world",
+      "emoji": "🇪🇸"
+    },
+    {
+      "name": {
+        "ru": "Италия",
+        "en": "Italy"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Италия",
+        "en": "TV channels: Italy"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/it.m3u",
+      "type": "world",
+      "emoji": "🇮🇹"
+    },
+    {
+      "name": {
+        "ru": "Португалия",
+        "en": "Portugal"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Португалия",
+        "en": "TV channels: Portugal"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/pt.m3u",
+      "type": "world",
+      "emoji": "🇵🇹"
+    },
+    {
+      "name": {
+        "ru": "Нидерланды",
+        "en": "Netherlands"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Нидерланды",
+        "en": "TV channels: Netherlands"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/nl.m3u",
+      "type": "world",
+      "emoji": "🇳🇱"
+    },
+    {
+      "name": {
+        "ru": "Великобритания",
+        "en": "United Kingdom"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Великобритания",
+        "en": "TV channels: United Kingdom"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/uk.m3u",
+      "type": "world",
+      "emoji": "🇬🇧"
+    },
+    {
+      "name": {
+        "ru": "США",
+        "en": "United States"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: США",
+        "en": "TV channels: United States"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/us.m3u",
+      "type": "world",
+      "emoji": "🇺🇸"
+    },
+    {
+      "name": {
+        "ru": "Канада",
+        "en": "Canada"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Канада",
+        "en": "TV channels: Canada"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/ca.m3u",
+      "type": "world",
+      "emoji": "🇨🇦"
+    },
+    {
+      "name": {
+        "ru": "Бразилия",
+        "en": "Brazil"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Бразилия",
+        "en": "TV channels: Brazil"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/br.m3u",
+      "type": "world",
+      "emoji": "🇧🇷"
+    },
+    {
+      "name": {
+        "ru": "Индия",
+        "en": "India"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Индия",
+        "en": "TV channels: India"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/in.m3u",
+      "type": "world",
+      "emoji": "🇮🇳"
+    },
+    {
+      "name": {
+        "ru": "Япония",
+        "en": "Japan"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Япония",
+        "en": "TV channels: Japan"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/jp.m3u",
+      "type": "world",
+      "emoji": "🇯🇵"
+    },
+    {
+      "name": {
+        "ru": "Южная Корея",
+        "en": "South Korea"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Южная Корея",
+        "en": "TV channels: South Korea"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/kr.m3u",
+      "type": "world",
+      "emoji": "🇰🇷"
+    },
+    {
+      "name": {
+        "ru": "Австралия",
+        "en": "Australia"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Австралия",
+        "en": "TV channels: Australia"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/au.m3u",
+      "type": "world",
+      "emoji": "🇦🇺"
+    },
+    {
+      "name": {
+        "ru": "Израиль",
+        "en": "Israel"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Израиль",
+        "en": "TV channels: Israel"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/il.m3u",
+      "type": "world",
+      "emoji": "🇮🇱"
+    },
+    {
+      "name": {
+        "ru": "ОАЭ",
+        "en": "UAE"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: ОАЭ",
+        "en": "TV channels: UAE"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/ae.m3u",
+      "type": "world",
+      "emoji": "🇦🇪"
+    },
+    {
+      "name": {
+        "ru": "Египет",
+        "en": "Egypt"
+      },
+      "desc": {
+        "ru": "Эфирные и онлайн-каналы: Египет",
+        "en": "TV channels: Egypt"
+      },
+      "url": "https://iptv-org.github.io/iptv/countries/eg.m3u",
+      "type": "world",
+      "emoji": "🇪🇬"
+    }
+  ]
+}

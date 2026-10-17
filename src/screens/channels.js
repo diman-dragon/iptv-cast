@@ -36,7 +36,7 @@ function createThumb(ch) {
   return thumb;
 }
 
-// Список каналов одного источника — внутри экрана «Каталог». onBack — «назад к каталогу».
+// Список каналов одного источника — внутри экрана «Библиотека». onBack — «назад к плейлистам».
 export function createChannelsView({ onBack }) {
   const node = el('div', 'channels');
   let source = null;

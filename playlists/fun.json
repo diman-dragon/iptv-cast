@@ -1,0 +1,58 @@
+{
+  "format": "iptvcast-pack",
+  "name": "Развлечения",
+  "playlists": [
+    {
+      "name": {
+        "ru": "Развлекательные",
+        "en": "Entertainment"
+      },
+      "desc": {
+        "ru": "Шоу, реалити, развлечения",
+        "en": "Shows, reality, entertainment"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/entertainment.m3u",
+      "type": "fun",
+      "emoji": "🎭"
+    },
+    {
+      "name": {
+        "ru": "Комедии",
+        "en": "Comedy"
+      },
+      "desc": {
+        "ru": "Юмор и комедийные каналы",
+        "en": "Humour and comedy channels"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/comedy.m3u",
+      "type": "fun",
+      "emoji": "😂"
+    },
+    {
+      "name": {
+        "ru": "Общие (эфирные)",
+        "en": "General"
+      },
+      "desc": {
+        "ru": "Универсальные каналы: фильмы, новости, шоу",
+        "en": "Generalist channels: movies, news, shows"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/general.m3u",
+      "type": "fun",
+      "emoji": "📡"
+    },
+    {
+      "name": {
+        "ru": "Магазин на диване",
+        "en": "Shopping"
+      },
+      "desc": {
+        "ru": "Телемагазины",
+        "en": "Teleshopping"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/shop.m3u",
+      "type": "fun",
+      "emoji": "🛍️"
+    }
+  ]
+}

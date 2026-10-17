@@ -1,5 +1,5 @@
 // Состояние навигации: какой экран открыт сейчас.
-export const HOME = 'catalog';
+export const HOME = 'library';
 
 let current = HOME;
 const listeners = new Set();

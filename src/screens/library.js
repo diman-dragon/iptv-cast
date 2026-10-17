@@ -5,21 +5,21 @@ import { TYPES, findType } from '../data/types.js';
 import { openAddDialog } from '../dialogs/add.js';
 import { dropSourceData } from '../iptv/playlist.js';
 import { allSources, descOf, nameOf } from '../iptv/sources.js';
-import { getPref, onStoreChange, removeSource, setPref } from '../iptv/store.js';
-import { getView, onView, setView } from '../iptv/view-state.js';
+import { customSources, getPref, onStoreChange, removeSource, setPref } from '../iptv/store.js';
+import { onView, setView } from '../iptv/view-state.js';
 import { ICONS } from '../ui/icons.js';
 import { closeModal, openModal } from '../ui/modal.js';
 import { createSearch } from '../ui/search.js';
 import { createStateBox } from '../ui/state-box.js';
-import { createViewSwitch } from '../ui/view-switch.js';
 import { toast } from '../ui/toast.js';
+import { createViewSwitch } from '../ui/view-switch.js';
 import { createChannelsView } from './channels.js';
 
 const ALL = 'all';
 
 const openSource = (source) => setView({ sourceId: source.id });
 
-// Удаление своего источника — с подтверждением, чтобы не стереть случайно.
+// Удаление плейлиста — с подтверждением, чтобы не стереть случайно.
 function confirmRemove(source) {
   const actions = el('div', 'modal-actions');
   actions.append(
@@ -44,7 +44,7 @@ function createCard(source) {
   const meta = el('div', 'meta');
   meta.append(el('div', 'fname', nameOf(source)), el('div', 'fsub', descOf(source)));
   item.append(el('div', 'src-bubble', source.emoji ?? type.emoji), meta);
-  if (!source.builtin && !source.virtual) {
+  if (!source.virtual) {
     const del = button('row-btn', (e) => {
       e.stopPropagation();
       confirmRemove(source);
@@ -57,13 +57,13 @@ function createCard(source) {
   return item;
 }
 
-// Каталог: типы источников → источник → список каналов → окно плеера.
-export function renderCatalog() {
+// Библиотека: загруженные плейлисты по жанрам → список каналов → окно плеера.
+export function renderLibrary() {
   const root = el('section', 'catalog');
   let type = getPref('lastType');
   let query = '';
 
-  // ---------- каталог источников
+  // ---------- список плейлистов
   const browse = el('div');
   const top = el('div', 'cat-top');
   const search = createSearch('cat.search', (text) => {
@@ -76,23 +76,6 @@ export function renderCatalog() {
 
   const chips = el('div', 'chips');
   chips.dataset.noswipe = '1';
-  const chipNodes = new Map();
-  [{ id: ALL, emoji: '✨', key: 'type.all' }, ...TYPES].forEach((x) => {
-    const chip = button('chip', () => {
-      type = x.id;
-      setPref('lastType', type);
-      mark();
-      draw();
-    });
-    chip.append(el('span', 'chip-emoji', x.emoji), bindText(el('span'), x.key));
-    chips.append(chip);
-    chipNodes.set(x.id, chip);
-  });
-  const mark = () => {
-    chipNodes.forEach((chip, id) => chip.classList.toggle('on', id === type));
-    chipNodes.get(type)?.scrollIntoView?.({ inline: 'center', block: 'nearest' });
-  };
-
   const viewSwitch = createViewSwitch(
     () => getPref('view'),
     (v) => {
@@ -103,15 +86,31 @@ export function renderCatalog() {
   const bar = el('div', 'cat-bar');
   const count = el('div', 'muted small');
   bar.append(count, viewSwitch);
+  const intro = el('div');
   const list = el('div');
-  browse.append(top, chips, bar, list);
+  browse.append(top, chips, bar, intro, list);
 
-  function matches(s) {
-    if (query && !`${nameOf(s)} ${descOf(s)}`.toLowerCase().includes(query)) return false;
-    if (type === ALL) return true;
-    if (type === 'mine') return s.type === 'mine' || !s.builtin;
-    return s.type === type;
+  // Чипы жанров — только те, в которых что-то есть.
+  function drawChips() {
+    const present = new Set(allSources().map((s) => s.type));
+    const items = [{ id: ALL, emoji: '✨', key: 'type.all' }, ...TYPES.filter((x) => present.has(x.id))];
+    if (!items.some((x) => x.id === type)) type = ALL;
+    chips.replaceChildren(
+      ...items.map((x) => {
+        const chip = button(`chip${x.id === type ? ' on' : ''}`, () => {
+          type = x.id;
+          setPref('lastType', type);
+          draw();
+        });
+        chip.append(el('span', 'chip-emoji', x.emoji), bindText(el('span'), x.key));
+        return chip;
+      }),
+    );
+    chips.querySelector('.on')?.scrollIntoView?.({ inline: 'center', block: 'nearest' });
   }
+
+  const matches = (s) =>
+    (!query || `${nameOf(s)} ${descOf(s)}`.toLowerCase().includes(query)) && (type === ALL || s.type === type);
 
   function section(titleType, sources) {
     const box = el('div', 'cat-section');
@@ -125,10 +124,13 @@ export function renderCatalog() {
   }
 
   function draw() {
+    drawChips();
     const sources = allSources().filter(matches);
-    count.textContent = t('cat.count', { n: sources.length });
+    count.textContent = t('cat.count', { n: customSources().length });
+    // Пока ничего не загружено — подсказка, с чего начать.
+    intro.replaceChildren(...(customSources().length || query ? [] : [createStateBox(ICONS.library, 'lib.empty', 'lib.emptyHint', 'cat.add', openAddDialog)]));
     if (!sources.length) {
-      list.replaceChildren(createStateBox(ICONS.catalog, 'cat.empty', type === 'mine' ? 'cat.emptyMineHint' : 'cat.emptyHint', type === 'mine' ? 'cat.add' : null, openAddDialog));
+      list.replaceChildren(...(query ? [createStateBox(ICONS.search, 'cat.empty', 'cat.emptyHint')] : []));
       return;
     }
     if (type === ALL && !query) {
@@ -144,12 +146,12 @@ export function renderCatalog() {
     list.replaceChildren(grid);
   }
 
-  // ---------- внутри источника
+  // ---------- внутри плейлиста
   const channels = createChannelsView({ onBack: () => setView({ sourceId: null }) });
   channels.node.hidden = true;
   root.append(browse, channels.node);
 
-  // Каталог и список каналов — один экран: переключаем показ и помним прокрутку каталога.
+  // Библиотека и список каналов — один экран: переключаем показ и помним прокрутку.
   let saved = 0;
   onView((v) => {
     const screen = root.closest('.screen');
@@ -161,7 +163,6 @@ export function renderCatalog() {
     if (screen) screen.scrollTop = open ? 0 : saved;
   });
 
-  mark();
   draw();
   onStoreChange((what) => what === 'sources' && draw());
   document.addEventListener('langchange', draw);

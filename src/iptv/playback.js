@@ -99,8 +99,8 @@ export async function playChannel(ch, list) {
   const all = S.list.length ? S.list : [ch];
   const at = Math.max(0, all.findIndex((c) => c.url === ch.url));
   const from = Math.max(0, at - AROUND);
-  await Iptv.play({ ...item(ch), queue: all.slice(from, at + AROUND).map(item), index: at - from });
-  await Iptv.openVideo();
+  // video: окно плеера открывается тем же вызовом, без второго обращения к нативной части.
+  await Iptv.play({ ...item(ch), queue: all.slice(from, at + AROUND).map(item), index: at - from, video: true });
 }
 
 // Явно «на ТВ»: если ТВ ещё не выбран — откроется список, а канал уйдёт сам после выбора.

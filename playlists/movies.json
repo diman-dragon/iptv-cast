@@ -1,0 +1,45 @@
+{
+  "format": "iptvcast-pack",
+  "name": "Кино и сериалы",
+  "playlists": [
+    {
+      "name": {
+        "ru": "Кино",
+        "en": "Movies"
+      },
+      "desc": {
+        "ru": "Каналы с фильмами",
+        "en": "Movie channels"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/movies.m3u",
+      "type": "movies",
+      "emoji": "🎬"
+    },
+    {
+      "name": {
+        "ru": "Сериалы",
+        "en": "Series"
+      },
+      "desc": {
+        "ru": "Сериалы и шоу",
+        "en": "TV series and shows"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/series.m3u",
+      "type": "movies",
+      "emoji": "📺"
+    },
+    {
+      "name": {
+        "ru": "Классика",
+        "en": "Classics"
+      },
+      "desc": {
+        "ru": "Старое кино и ретро-каналы",
+        "en": "Old films and retro channels"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/classic.m3u",
+      "type": "movies",
+      "emoji": "🎞️"
+    }
+  ]
+}

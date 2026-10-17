@@ -1,0 +1,45 @@
+{
+  "format": "iptvcast-pack",
+  "name": "Детям",
+  "playlists": [
+    {
+      "name": {
+        "ru": "Детские",
+        "en": "Kids"
+      },
+      "desc": {
+        "ru": "Мультфильмы и детские передачи",
+        "en": "Cartoons and children’s shows"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/kids.m3u",
+      "type": "kids",
+      "emoji": "🧸"
+    },
+    {
+      "name": {
+        "ru": "Анимация",
+        "en": "Animation"
+      },
+      "desc": {
+        "ru": "Мультики и аниме",
+        "en": "Cartoons and anime"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/animation.m3u",
+      "type": "kids",
+      "emoji": "🎨"
+    },
+    {
+      "name": {
+        "ru": "Семейные",
+        "en": "Family"
+      },
+      "desc": {
+        "ru": "Каналы для всей семьи",
+        "en": "Channels for the whole family"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/family.m3u",
+      "type": "kids",
+      "emoji": "👨‍👩‍👧"
+    }
+  ]
+}

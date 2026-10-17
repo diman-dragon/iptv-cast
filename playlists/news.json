@@ -1,0 +1,58 @@
+{
+  "format": "iptvcast-pack",
+  "name": "Новости",
+  "playlists": [
+    {
+      "name": {
+        "ru": "Новости",
+        "en": "News"
+      },
+      "desc": {
+        "ru": "Мировые и местные новостные каналы",
+        "en": "World and local news channels"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/news.m3u",
+      "type": "news",
+      "emoji": "📰"
+    },
+    {
+      "name": {
+        "ru": "Погода",
+        "en": "Weather"
+      },
+      "desc": {
+        "ru": "Прогнозы и метеоканалы",
+        "en": "Forecasts and weather channels"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/weather.m3u",
+      "type": "news",
+      "emoji": "⛅"
+    },
+    {
+      "name": {
+        "ru": "Бизнес и финансы",
+        "en": "Business & finance"
+      },
+      "desc": {
+        "ru": "Экономика, рынки, финансы",
+        "en": "Economy, markets, finance"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/business.m3u",
+      "type": "news",
+      "emoji": "💼"
+    },
+    {
+      "name": {
+        "ru": "Парламенты",
+        "en": "Parliaments"
+      },
+      "desc": {
+        "ru": "Трансляции заседаний и политика",
+        "en": "Parliament sessions and politics"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/legislative.m3u",
+      "type": "news",
+      "emoji": "🏛️"
+    }
+  ]
+}

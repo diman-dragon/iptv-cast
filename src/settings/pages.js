@@ -2,7 +2,8 @@ import { el, button } from '../core/dom.js';
 import { bindText } from '../i18n/bind.js';
 import { t } from '../i18n/i18n.js';
 import { kvClear } from '../core/kv.js';
-import { clearHistory, customSources, favorites, getPref, history, onStoreChange, removeSource, setPref } from '../iptv/store.js';
+import { clearHistory, customSources, favorites, getPref, history, onStoreChange, removeAllSources, removeSource, setPref } from '../iptv/store.js';
+import { closeModal, openModal } from '../ui/modal.js';
 import { clearMemory, diagnose, dropSourceData } from '../iptv/playlist.js';
 import { createAboutCard } from '../ui/about-card.js';
 import { createField } from '../ui/field.js';
@@ -48,6 +49,23 @@ function dataBlock() {
       clearHistory();
       toast(t('set.historyCleared'));
     }), 'set.clearHistory'),
+  );
+  actions.append(
+    bindText(button('btn ghost', () => {
+      const n = customSources().length;
+      if (!n) return toast(t('set.nothingToRemove'));
+      const row = el('div', 'modal-actions');
+      row.append(
+        bindText(button('btn ghost', closeModal), 'lib.cancel'),
+        bindText(button('btn danger', async () => {
+          await Promise.all(customSources().map((x) => dropSourceData(x.id)));
+          removeAllSources();
+          closeModal();
+          toast(t('cat.removed'));
+        }), 'set.removeAll'),
+      );
+      openModal(t('set.removeAllConfirm', { n }), [row]);
+    }), 'set.removeAll'),
   );
   const diag = el('pre', 'diag');
   diag.hidden = true;

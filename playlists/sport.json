@@ -1,0 +1,32 @@
+{
+  "format": "iptvcast-pack",
+  "name": "Спорт",
+  "playlists": [
+    {
+      "name": {
+        "ru": "Спорт",
+        "en": "Sports"
+      },
+      "desc": {
+        "ru": "Футбол, хоккей, теннис, единоборства: спортивные каналы мира",
+        "en": "Football, hockey, tennis, combat sports: sports channels worldwide"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/sports.m3u",
+      "type": "sport",
+      "emoji": "🏆"
+    },
+    {
+      "name": {
+        "ru": "Экстрим и природа",
+        "en": "Outdoor & adventure"
+      },
+      "desc": {
+        "ru": "Экстремальный спорт, охота, рыбалка, походы",
+        "en": "Extreme sports, hunting, fishing, hiking"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/outdoor.m3u",
+      "type": "sport",
+      "emoji": "🏔️"
+    }
+  ]
+}

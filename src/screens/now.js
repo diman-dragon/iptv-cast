@@ -110,7 +110,7 @@ export function renderNow() {
     );
   }
 
-  const empty = createStateBox(ICONS.now, 'now.empty', 'now.emptyHint', 'now.toChannels', () => navigate('catalog'));
+  const empty = createStateBox(ICONS.now, 'now.empty', 'now.emptyHint', 'now.toChannels', () => navigate('library'));
 
   function draw() {
     const S = getPlayback();

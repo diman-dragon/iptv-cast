@@ -1,0 +1,32 @@
+{
+  "format": "iptvcast-pack",
+  "name": "Музыка",
+  "playlists": [
+    {
+      "name": {
+        "ru": "Музыка",
+        "en": "Music"
+      },
+      "desc": {
+        "ru": "Клипы, концерты, радио с картинкой",
+        "en": "Music videos, concerts, radio with picture"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/music.m3u",
+      "type": "music",
+      "emoji": "🎵"
+    },
+    {
+      "name": {
+        "ru": "Релакс",
+        "en": "Relax"
+      },
+      "desc": {
+        "ru": "Спокойные пейзажи и музыка для фона",
+        "en": "Calm scenery and background music"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/relax.m3u",
+      "type": "music",
+      "emoji": "🌅"
+    }
+  ]
+}

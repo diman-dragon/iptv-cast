@@ -1,0 +1,58 @@
+{
+  "format": "iptvcast-pack",
+  "name": "Подборки",
+  "playlists": [
+    {
+      "name": {
+        "ru": "Все каналы мира",
+        "en": "All channels"
+      },
+      "desc": {
+        "ru": "Полный список iptv-org: тысячи каналов (загрузка дольше)",
+        "en": "The full iptv-org list: thousands of channels (slower to load)"
+      },
+      "url": "https://iptv-org.github.io/iptv/index.m3u",
+      "type": "mix",
+      "emoji": "🌐"
+    },
+    {
+      "name": {
+        "ru": "Все по категориям",
+        "en": "All by category"
+      },
+      "desc": {
+        "ru": "Те же каналы, сгруппированные по тематике",
+        "en": "The same channels grouped by topic"
+      },
+      "url": "https://iptv-org.github.io/iptv/index.category.m3u",
+      "type": "mix",
+      "emoji": "🗂️"
+    },
+    {
+      "name": {
+        "ru": "Free-TV",
+        "en": "Free-TV"
+      },
+      "desc": {
+        "ru": "Проверяемый список бесплатных ТВ-каналов по странам",
+        "en": "A curated list of free TV channels by country"
+      },
+      "url": "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
+      "type": "mix",
+      "emoji": "🆓"
+    },
+    {
+      "name": {
+        "ru": "Общественное ТВ",
+        "en": "Public broadcasters"
+      },
+      "desc": {
+        "ru": "Общественные вещатели",
+        "en": "Public service broadcasters"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/public.m3u",
+      "type": "mix",
+      "emoji": "🏛️"
+    }
+  ]
+}

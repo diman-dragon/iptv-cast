@@ -1,0 +1,71 @@
+{
+  "format": "iptvcast-pack",
+  "name": "Лайфстайл",
+  "playlists": [
+    {
+      "name": {
+        "ru": "Лайфстайл",
+        "en": "Lifestyle"
+      },
+      "desc": {
+        "ru": "Мода, дом, здоровье",
+        "en": "Fashion, home, health"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/lifestyle.m3u",
+      "type": "life",
+      "emoji": "✨"
+    },
+    {
+      "name": {
+        "ru": "Кулинария",
+        "en": "Cooking"
+      },
+      "desc": {
+        "ru": "Рецепты и кулинарные шоу",
+        "en": "Recipes and cooking shows"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/cooking.m3u",
+      "type": "life",
+      "emoji": "🍳"
+    },
+    {
+      "name": {
+        "ru": "Путешествия",
+        "en": "Travel"
+      },
+      "desc": {
+        "ru": "Страны, города, маршруты",
+        "en": "Countries, cities, routes"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/travel.m3u",
+      "type": "life",
+      "emoji": "✈️"
+    },
+    {
+      "name": {
+        "ru": "Авто",
+        "en": "Auto"
+      },
+      "desc": {
+        "ru": "Автомобили и мотоспорт",
+        "en": "Cars and motorsport"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/auto.m3u",
+      "type": "life",
+      "emoji": "🚗"
+    },
+    {
+      "name": {
+        "ru": "Религия",
+        "en": "Religious"
+      },
+      "desc": {
+        "ru": "Религиозные каналы",
+        "en": "Religious channels"
+      },
+      "url": "https://iptv-org.github.io/iptv/categories/religious.m3u",
+      "type": "life",
+      "emoji": "🕊️"
+    }
+  ]
+}

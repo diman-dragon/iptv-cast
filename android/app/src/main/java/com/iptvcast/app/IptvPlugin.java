@@ -163,6 +163,9 @@ public class IptvPlugin extends Plugin {
           moved = true;
           ChannelQueue.set(list, start);
           ChannelQueue.start(getContext());
+          if (Boolean.TRUE.equals(call.getBoolean("video", false))) {
+            getActivity().startActivity(new Intent(getContext(), PlayerActivity.class));
+          }
         });
   }
 

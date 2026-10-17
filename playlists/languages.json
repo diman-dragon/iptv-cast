@@ -1,0 +1,162 @@
+{
+  "format": "iptvcast-pack",
+  "name": "Языки",
+  "playlists": [
+    {
+      "name": {
+        "ru": "Язык: русский",
+        "en": "Language: Russian"
+      },
+      "desc": {
+        "ru": "Каналы на языке «русский» со всего мира",
+        "en": "Channels in Russian from all over the world"
+      },
+      "url": "https://iptv-org.github.io/iptv/languages/rus.m3u",
+      "type": "world",
+      "emoji": "🗣️"
+    },
+    {
+      "name": {
+        "ru": "Язык: английский",
+        "en": "Language: English"
+      },
+      "desc": {
+        "ru": "Каналы на языке «английский» со всего мира",
+        "en": "Channels in English from all over the world"
+      },
+      "url": "https://iptv-org.github.io/iptv/languages/eng.m3u",
+      "type": "world",
+      "emoji": "🗣️"
+    },
+    {
+      "name": {
+        "ru": "Язык: украинский",
+        "en": "Language: Ukrainian"
+      },
+      "desc": {
+        "ru": "Каналы на языке «украинский» со всего мира",
+        "en": "Channels in Ukrainian from all over the world"
+      },
+      "url": "https://iptv-org.github.io/iptv/languages/ukr.m3u",
+      "type": "world",
+      "emoji": "🗣️"
+    },
+    {
+      "name": {
+        "ru": "Язык: сербский",
+        "en": "Language: Serbian"
+      },
+      "desc": {
+        "ru": "Каналы на языке «сербский» со всего мира",
+        "en": "Channels in Serbian from all over the world"
+      },
+      "url": "https://iptv-org.github.io/iptv/languages/srp.m3u",
+      "type": "world",
+      "emoji": "🗣️"
+    },
+    {
+      "name": {
+        "ru": "Язык: немецкий",
+        "en": "Language: German"
+      },
+      "desc": {
+        "ru": "Каналы на языке «немецкий» со всего мира",
+        "en": "Channels in German from all over the world"
+      },
+      "url": "https://iptv-org.github.io/iptv/languages/deu.m3u",
+      "type": "world",
+      "emoji": "🗣️"
+    },
+    {
+      "name": {
+        "ru": "Язык: французский",
+        "en": "Language: French"
+      },
+      "desc": {
+        "ru": "Каналы на языке «французский» со всего мира",
+        "en": "Channels in French from all over the world"
+      },
+      "url": "https://iptv-org.github.io/iptv/languages/fra.m3u",
+      "type": "world",
+      "emoji": "🗣️"
+    },
+    {
+      "name": {
+        "ru": "Язык: испанский",
+        "en": "Language: Spanish"
+      },
+      "desc": {
+        "ru": "Каналы на языке «испанский» со всего мира",
+        "en": "Channels in Spanish from all over the world"
+      },
+      "url": "https://iptv-org.github.io/iptv/languages/spa.m3u",
+      "type": "world",
+      "emoji": "🗣️"
+    },
+    {
+      "name": {
+        "ru": "Язык: итальянский",
+        "en": "Language: Italian"
+      },
+      "desc": {
+        "ru": "Каналы на языке «итальянский» со всего мира",
+        "en": "Channels in Italian from all over the world"
+      },
+      "url": "https://iptv-org.github.io/iptv/languages/ita.m3u",
+      "type": "world",
+      "emoji": "🗣️"
+    },
+    {
+      "name": {
+        "ru": "Язык: португальский",
+        "en": "Language: Portuguese"
+      },
+      "desc": {
+        "ru": "Каналы на языке «португальский» со всего мира",
+        "en": "Channels in Portuguese from all over the world"
+      },
+      "url": "https://iptv-org.github.io/iptv/languages/por.m3u",
+      "type": "world",
+      "emoji": "🗣️"
+    },
+    {
+      "name": {
+        "ru": "Язык: польский",
+        "en": "Language: Polish"
+      },
+      "desc": {
+        "ru": "Каналы на языке «польский» со всего мира",
+        "en": "Channels in Polish from all over the world"
+      },
+      "url": "https://iptv-org.github.io/iptv/languages/pol.m3u",
+      "type": "world",
+      "emoji": "🗣️"
+    },
+    {
+      "name": {
+        "ru": "Язык: турецкий",
+        "en": "Language: Turkish"
+      },
+      "desc": {
+        "ru": "Каналы на языке «турецкий» со всего мира",
+        "en": "Channels in Turkish from all over the world"
+      },
+      "url": "https://iptv-org.github.io/iptv/languages/tur.m3u",
+      "type": "world",
+      "emoji": "🗣️"
+    },
+    {
+      "name": {
+        "ru": "Язык: арабский",
+        "en": "Language: Arabic"
+      },
+      "desc": {
+        "ru": "Каналы на языке «арабский» со всего мира",
+        "en": "Channels in Arabic from all over the world"
+      },
+      "url": "https://iptv-org.github.io/iptv/languages/ara.m3u",
+      "type": "world",
+      "emoji": "🗣️"
+    }
+  ]
+}

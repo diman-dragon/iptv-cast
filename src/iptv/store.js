@@ -18,7 +18,7 @@ const changed = (what) => listeners.forEach((fn) => fn(what));
 const DEFAULTS = {
   preferCast: true, // если ТВ подключён — каналы идут на ТВ
   ua: '', // свой User-Agent для всех каналов
-  view: 'list', // вид каталога
+  view: 'list', // вид библиотеки
   cview: 'list', // вид списка каналов
   lastSource: 'freetv',
   lastType: 'all',
@@ -31,19 +31,44 @@ export function setPref(key, value) {
   changed('prefs');
 }
 
-// ---------- свои источники
+// ---------- библиотека: загруженные плейлисты
 export const customSources = () => readJson(K.sources, []);
 
-export function addSource({ name, url, type, file = false }) {
-  const id = `my-${Date.now().toString(36)}`;
-  const item = { id, name, url, type, file, builtin: false, emoji: file ? '📄' : '🔗' };
-  writeJson(K.sources, [...customSources(), item]);
-  changed('sources');
-  return item;
+// list: [{ name, url, type, emoji, desc, file }]. Плейлисты с уже известной ссылкой пропускаются.
+// Возвращает только реально добавленные.
+export function addSources(list) {
+  const have = customSources();
+  const urls = new Set(have.filter((x) => !x.file).map((x) => x.url));
+  const added = [];
+  list.forEach((x) => {
+    if (!x.file && urls.has(x.url)) return;
+    urls.add(x.url);
+    added.push({
+      id: `my-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+      name: x.name,
+      desc: x.desc,
+      url: x.url || '',
+      type: x.type || 'mix',
+      emoji: x.emoji || (x.file ? '📄' : '🔗'),
+      file: Boolean(x.file),
+    });
+  });
+  if (added.length) {
+    writeJson(K.sources, [...have, ...added]);
+    changed('sources');
+  }
+  return added;
 }
+
+export const addSource = (x) => addSources([x])[0];
 
 export function removeSource(id) {
   writeJson(K.sources, customSources().filter((s) => s.id !== id));
+  changed('sources');
+}
+
+export function removeAllSources() {
+  writeJson(K.sources, []);
   changed('sources');
 }
 
