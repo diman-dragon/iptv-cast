@@ -11,7 +11,7 @@ public class MainActivity extends BridgeActivity {
   }
 
   @Override
-  protected void onDestroy() {
+  public void onDestroy() {
     // The app is closed for good: free the player (there is no background service to keep it).
     if (isFinishing()) {
       ChannelQueue.clear();
