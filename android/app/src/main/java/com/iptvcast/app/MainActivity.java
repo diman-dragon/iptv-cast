@@ -9,4 +9,14 @@ public class MainActivity extends BridgeActivity {
     registerPlugin(IptvPlugin.class);
     super.onCreate(savedInstanceState);
   }
+
+  @Override
+  protected void onDestroy() {
+    // The app is closed for good: free the player (there is no background service to keep it).
+    if (isFinishing()) {
+      ChannelQueue.clear();
+      PlayerHolder.release();
+    }
+    super.onDestroy();
+  }
 }

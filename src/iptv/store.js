@@ -16,7 +16,6 @@ const changed = (what) => listeners.forEach((fn) => fn(what));
 
 // ---------- настройки
 const DEFAULTS = {
-  video: true, // сразу открывать видео на весь экран
   preferCast: true, // если ТВ подключён — каналы идут на ТВ
   ua: '', // свой User-Agent для всех каналов
   view: 'list', // вид каталога

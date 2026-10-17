@@ -6,7 +6,7 @@ import { getPref, pushHistory } from './store.js';
 // Состояние воспроизведения для всех экранов: что играет, на телефоне или на ТВ, таймер сна.
 const S = {
   channel: null, // последний выбранный канал
-  list: [], // список, из которого выбран: по нему работают «предыдущий / следующий»
+  list: [], // список, из которого выбран (для переключения на ТВ и повторного запуска)
   playing: false,
   loading: false,
   error: '',
@@ -15,13 +15,14 @@ const S = {
   sleepDeadline: 0, // Date.now() момента, когда сработает таймер сна
 };
 let pending = null; // канал, который отправим на ТВ, как только пользователь его выберет
+const AROUND = 150; // сколько соседних каналов отдаём нативной очереди
 
 const listeners = new Set();
 export const getPlayback = () => S;
 export const onPlayback = (fn) => listeners.add(fn);
 const emit = () => listeners.forEach((fn) => fn(S));
 
-const payload = (ch) => ({
+const item = (ch) => ({
   url: ch.url,
   title: cleanName(ch.name),
   subtitle: ch.group || '',
@@ -35,8 +36,11 @@ function applyState(st) {
   S.loading = Boolean(st.loading);
   S.error = st.error || '';
   S.sleepDeadline = st.sleepLeft > 0 ? Date.now() + st.sleepLeft * 1000 : 0;
-  // Сервис пережил закрытие приложения: подхватываем то, что играет.
-  if (!S.channel && st.loaded && st.url) S.channel = { name: st.title, url: st.url, group: '', logo: '' };
+  // Канал могли переключить кнопками окна плеера — подхватываем то, что играет сейчас.
+  if (!S.onTv && st.loaded && st.url && S.channel?.url !== st.url) {
+    S.channel = S.list.find((c) => c.url === st.url) ?? { name: st.title, url: st.url, group: st.sub || '', logo: st.logo || '' };
+    pushHistory(S.channel);
+  }
   emit();
 }
 
@@ -63,8 +67,8 @@ export async function initPlayback() {
 // Текст ошибки плеера для пользователя.
 export function errorText(code) {
   if (!code) return '';
-  if (/NETWORK|TIMEOUT|IO_UNSPECIFIED/.test(code)) return t('err.net');
-  if (/HTTP|BAD_HTTP|FILE_NOT_FOUND/.test(code)) return t('err.http');
+  if (/NETWORK|TIMEOUT|IO_UNSPECIFIED|CLEARTEXT/.test(code)) return t('err.net');
+  if (/HTTP|FILE_NOT_FOUND/.test(code)) return t('err.http');
   if (/PARSING|UNSUPPORTED|DECODER|DECODING/.test(code)) return t('err.format');
   return t('err.generic');
 }
@@ -82,22 +86,26 @@ async function sendToTv(ch) {
   emit();
 }
 
-// Играть на телефоне; если к ТВ уже подключились и это разрешено — сразу на ТВ.
+// Нажали на канал: открывается окно плеера (видео или причина ошибки).
+// Если к ТВ уже подключились и это разрешено — канал сразу уходит на ТВ.
 export async function playChannel(ch, list) {
-  if (list) S.list = list;
+  if (list?.length) S.list = list;
   S.channel = ch;
   pushHistory(ch);
   if (S.cast.connected && getPref('preferCast')) return sendToTv(ch);
   S.onTv = false;
   S.error = '';
   emit();
-  await Iptv.play(payload(ch));
-  if (getPref('video')) await Iptv.openVideo();
+  const all = S.list.length ? S.list : [ch];
+  const at = Math.max(0, all.findIndex((c) => c.url === ch.url));
+  const from = Math.max(0, at - AROUND);
+  await Iptv.play({ ...item(ch), queue: all.slice(from, at + AROUND).map(item), index: at - from });
+  await Iptv.openVideo();
 }
 
 // Явно «на ТВ»: если ТВ ещё не выбран — откроется список, а канал уйдёт сам после выбора.
 export async function castChannel(ch, list) {
-  if (list) S.list = list;
+  if (list?.length) S.list = list;
   S.channel = ch;
   pushHistory(ch);
   if (S.cast.connected) return sendToTv(ch);
@@ -133,13 +141,17 @@ export async function stopPlayback() {
   emit();
 }
 
-// Переключение по списку: step = +1 следующий, -1 предыдущий.
+// Переключение по списку: step = +1 следующий, -1 предыдущий. true — переключили.
 export async function zap(step) {
-  const list = S.list;
-  const i = list.findIndex((c) => c.url === S.channel?.url);
-  const next = list[i + step];
-  if (next) await (S.onTv ? castChannel(next) : playChannel(next));
-  return Boolean(next);
+  if (S.onTv) {
+    const i = S.list.findIndex((c) => c.url === S.channel?.url);
+    const next = S.list[i + step];
+    if (next) await castChannel(next);
+    return Boolean(next);
+  }
+  const st = await Iptv.zap({ step });
+  applyState(st);
+  return st.moved !== false;
 }
 
 export async function setSleep(minutes) {

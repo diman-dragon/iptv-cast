@@ -2,88 +2,69 @@ import { el, button, icon } from '../core/dom.js';
 import { bindText } from '../i18n/bind.js';
 import { t } from '../i18n/i18n.js';
 import { TYPES, findType } from '../data/types.js';
-import { navigate } from '../app/router.js';
 import { openAddDialog } from '../dialogs/add.js';
-import { dropSourceData, loadSource } from '../iptv/playlist.js';
+import { dropSourceData } from '../iptv/playlist.js';
 import { allSources, descOf, nameOf } from '../iptv/sources.js';
 import { getPref, onStoreChange, removeSource, setPref } from '../iptv/store.js';
-import { getView, setView } from '../iptv/view-state.js';
+import { getView, onView, setView } from '../iptv/view-state.js';
 import { ICONS } from '../ui/icons.js';
+import { closeModal, openModal } from '../ui/modal.js';
 import { createSearch } from '../ui/search.js';
-import { openSheet } from '../ui/sheet.js';
-import { toast } from '../ui/toast.js';
-import { createViewSwitch } from '../ui/view-switch.js';
 import { createStateBox } from '../ui/state-box.js';
+import { createViewSwitch } from '../ui/view-switch.js';
+import { toast } from '../ui/toast.js';
+import { createChannelsView } from './channels.js';
 
 const ALL = 'all';
 
-function openSource(source) {
-  setPref('lastSource', source.id);
-  setView({ mode: 'source', sourceId: source.id, query: '', group: '' });
-  navigate('channels');
-}
+const openSource = (source) => setView({ sourceId: source.id });
 
-function menuOf(source) {
-  const actions = [
-    { label: t('cat.open'), run: () => openSource(source) },
-    {
-      label: t('cat.refresh'),
-      run: async () => {
-        if (source.virtual) return;
-        toast(t('cat.refreshing'));
-        try {
-          await loadSource(source, { force: true });
-          toast(t('cat.refreshed'));
-        } catch {
-          toast(t('ch.error'));
-        }
-      },
-    },
-  ];
-  if (source.url) {
-    actions.push({
-      label: t('cat.copy'),
-      run: () => navigator.clipboard?.writeText(source.url).then(() => toast(t('cat.copied'))),
-    });
-  }
-  if (!source.builtin && !source.virtual) {
-    actions.push({
-      label: t('cat.remove'),
-      danger: true,
-      run: async () => {
+// Удаление своего источника — с подтверждением, чтобы не стереть случайно.
+function confirmRemove(source) {
+  const actions = el('div', 'modal-actions');
+  actions.append(
+    bindText(button('btn ghost', closeModal), 'lib.cancel'),
+    bindText(
+      button('btn danger', async () => {
         await dropSourceData(source.id);
         removeSource(source.id);
+        closeModal();
         toast(t('cat.removed'));
-      },
-    });
-  }
-  openSheet(nameOf(source), actions);
+      }),
+      'cat.remove',
+    ),
+  );
+  openModal(t('cat.confirmRemove', { n: nameOf(source) }), [actions]);
 }
 
 function createCard(source) {
   const type = findType(source.type);
   const item = el('div', 'src');
   item.style.setProperty('--c', type.color);
-  const bubble = el('div', 'src-bubble', source.emoji ?? type.emoji);
   const meta = el('div', 'meta');
   meta.append(el('div', 'fname', nameOf(source)), el('div', 'fsub', descOf(source)));
-  const more = button('more', (e) => {
-    e.stopPropagation();
-    menuOf(source);
-  });
-  more.append(icon(ICONS.more));
-  more.setAttribute('aria-label', t('lib.menu'));
-  item.append(bubble, meta, more);
+  item.append(el('div', 'src-bubble', source.emoji ?? type.emoji), meta);
+  if (!source.builtin && !source.virtual) {
+    const del = button('row-btn', (e) => {
+      e.stopPropagation();
+      confirmRemove(source);
+    });
+    del.append(icon(ICONS.trash));
+    del.setAttribute('aria-label', t('cat.remove'));
+    item.append(del);
+  }
   item.addEventListener('click', () => openSource(source));
   return item;
 }
 
-// Каталог: типы источников, поиск и свои плейлисты.
+// Каталог: типы источников → источник → список каналов → окно плеера.
 export function renderCatalog() {
   const root = el('section', 'catalog');
   let type = getPref('lastType');
   let query = '';
 
+  // ---------- каталог источников
+  const browse = el('div');
   const top = el('div', 'cat-top');
   const search = createSearch('cat.search', (text) => {
     query = text.toLowerCase();
@@ -91,13 +72,6 @@ export function renderCatalog() {
   });
   const add = button('btn add-btn', openAddDialog);
   add.append(icon(ICONS.plus, 'btn-ico'), bindText(el('span'), 'cat.add'));
-  const viewSwitch = createViewSwitch(
-    () => getPref('view'),
-    (v) => {
-      setPref('view', v);
-      draw();
-    },
-  );
   top.append(search, add);
 
   const chips = el('div', 'chips');
@@ -119,10 +93,18 @@ export function renderCatalog() {
     chipNodes.get(type)?.scrollIntoView?.({ inline: 'center', block: 'nearest' });
   };
 
+  const viewSwitch = createViewSwitch(
+    () => getPref('view'),
+    (v) => {
+      setPref('view', v);
+      draw();
+    },
+  );
   const bar = el('div', 'cat-bar');
   const count = el('div', 'muted small');
   bar.append(count, viewSwitch);
   const list = el('div');
+  browse.append(top, chips, bar, list);
 
   function matches(s) {
     if (query && !`${nameOf(s)} ${descOf(s)}`.toLowerCase().includes(query)) return false;
@@ -146,12 +128,10 @@ export function renderCatalog() {
     const sources = allSources().filter(matches);
     count.textContent = t('cat.count', { n: sources.length });
     if (!sources.length) {
-      const hint = type === 'mine' ? 'cat.emptyMineHint' : 'cat.emptyHint';
-      list.replaceChildren(createStateBox(ICONS.catalog, 'cat.empty', hint, type === 'mine' ? 'cat.add' : null, openAddDialog));
+      list.replaceChildren(createStateBox(ICONS.catalog, 'cat.empty', type === 'mine' ? 'cat.emptyMineHint' : 'cat.emptyHint', type === 'mine' ? 'cat.add' : null, openAddDialog));
       return;
     }
     if (type === ALL && !query) {
-      // Без фильтра — разделы по типам; свои плейлисты показываются в своём типе.
       list.replaceChildren(
         ...TYPES.map((x) => [x, sources.filter((s) => s.type === x.id)])
           .filter(([, items]) => items.length)
@@ -164,7 +144,23 @@ export function renderCatalog() {
     list.replaceChildren(grid);
   }
 
-  root.append(top, chips, bar, list);
+  // ---------- внутри источника
+  const channels = createChannelsView({ onBack: () => setView({ sourceId: null }) });
+  channels.node.hidden = true;
+  root.append(browse, channels.node);
+
+  // Каталог и список каналов — один экран: переключаем показ и помним прокрутку каталога.
+  let saved = 0;
+  onView((v) => {
+    const screen = root.closest('.screen');
+    const open = Boolean(v.sourceId);
+    if (open && !browse.hidden) saved = screen?.scrollTop ?? 0;
+    browse.hidden = open;
+    channels.node.hidden = !open;
+    if (open) channels.open(v.sourceId);
+    if (screen) screen.scrollTop = open ? 0 : saved;
+  });
+
   mark();
   draw();
   onStoreChange((what) => what === 'sources' && draw());

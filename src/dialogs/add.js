@@ -5,7 +5,7 @@ import { TYPES } from '../data/types.js';
 import { navigate } from '../app/router.js';
 import { parseM3u } from '../iptv/parse.js';
 import { saveFileSource } from '../iptv/playlist.js';
-import { addChannel, addSource, setPref } from '../iptv/store.js';
+import { addChannel, addSource } from '../iptv/store.js';
 import { setView } from '../iptv/view-state.js';
 import { createField, createSelect } from '../ui/field.js';
 import { closeModal, openModal } from '../ui/modal.js';
@@ -22,9 +22,8 @@ const readFile = (file) =>
   });
 
 function openSourceNow(source) {
-  setPref('lastSource', source.id);
-  setView({ mode: 'source', sourceId: source.id, query: '', group: '' });
-  navigate('channels');
+  navigate('catalog');
+  setView({ sourceId: source.id });
 }
 
 // «Добавить своё»: плейлист по ссылке, файл M3U или одиночный канал.

@@ -76,7 +76,6 @@ export const PAGES = [
     id: 'playback',
     titleKey: 'set.sectionPlayback',
     build: () => [
-      createRow('set.video', createSwitch(() => getPref('video'), (v) => setPref('video', v))),
       createRow('set.preferCast', createSwitch(() => getPref('preferCast'), (v) => setPref('preferCast', v))),
       uaRow(),
     ],

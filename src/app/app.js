@@ -8,9 +8,6 @@ import { createHost } from '../ui/screen-host.js';
 import { createTabbar } from '../ui/tabbar.js';
 import { toast } from '../ui/toast.js';
 import { t } from '../i18n/i18n.js';
-import { findSource } from '../iptv/sources.js';
-import { getPref } from '../iptv/store.js';
-import { getView, setView } from '../iptv/view-state.js';
 import { getScreen, navigate, onNavigate } from './router.js';
 import { initSwipe } from './swipe.js';
 
@@ -44,12 +41,6 @@ export function mountApp(root) {
 
   let prev = indexOf(getScreen());
   const apply = (id) => {
-    // Вкладка «Каналы» не должна быть пустой: если источник ещё не выбран — берём последний (или Free-TV).
-    const view = getView();
-    if (id === 'channels' && view.mode === 'source' && !view.sourceId) {
-      const last = getPref('lastSource');
-      setView({ sourceId: findSource(last) ? last : 'freetv', query: '', group: '' });
-    }
     const i = indexOf(id);
     header.setTitle(SCREENS[i].key);
     host.show(id, i - prev);

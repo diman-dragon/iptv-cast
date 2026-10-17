@@ -4,6 +4,13 @@
     <string name="title_activity_main">IPTV Cast</string>
     <string name="package_name">com.iptvcast.app</string>
     <string name="custom_url_scheme">com.iptvcast.app</string>
-    <string name="notif_close">Close</string>
-    <string name="player_error">Could not play this stream</string>
+    <string name="player_close">Close</string>
+    <string name="player_prev">Previous channel</string>
+    <string name="player_next">Next channel</string>
+    <string name="player_retry">Retry</string>
+    <string name="err_net">No connection to the stream server</string>
+    <string name="err_http">The server refused the stream or it was removed (HTTP %1$d)</string>
+    <string name="err_gone">The stream was removed or does not exist</string>
+    <string name="err_format">This stream format is not supported</string>
+    <string name="err_generic">Could not play this stream</string>
 </resources>

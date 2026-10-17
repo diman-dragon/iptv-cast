@@ -155,7 +155,7 @@
   -webkit-box-orient: vertical;
 }
 
-.lib-items.cards .src .more {
+.lib-items.cards .src .row-btn {
   position: absolute;
   top: 8px;
   right: 8px;

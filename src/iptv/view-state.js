@@ -1,5 +1,5 @@
-// Что показывает экран «Каналы»: источник, избранное или история; поиск и группа.
-const S = { mode: 'source', sourceId: null, query: '', group: '' };
+// Какой источник открыт внутри каталога (null — показан сам каталог).
+const S = { sourceId: null };
 const listeners = new Set();
 
 export const getView = () => S;

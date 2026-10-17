@@ -1,5 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="notif_close">Закрыть</string>
-    <string name="player_error">Не удалось воспроизвести поток</string>
+    <string name="player_close">Закрыть</string>
+    <string name="player_prev">Предыдущий канал</string>
+    <string name="player_next">Следующий канал</string>
+    <string name="player_retry">Повторить</string>
+    <string name="err_net">Нет соединения с сервером потока</string>
+    <string name="err_http">Сервер отказал или поток удалён (HTTP %1$d)</string>
+    <string name="err_gone">Поток удалён или не существует</string>
+    <string name="err_format">Формат потока не поддерживается</string>
+    <string name="err_generic">Не удалось воспроизвести поток</string>
 </resources>

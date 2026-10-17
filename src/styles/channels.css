@@ -88,16 +88,6 @@
   font-weight: 600;
 }
 
-.fav-mark {
-  display: inline-flex;
-  color: #eab308;
-}
-
-.fav-mark svg {
-  width: 14px;
-  height: 14px;
-}
-
 .fsub {
   margin-top: 2px;
   overflow: hidden;
@@ -132,21 +122,35 @@
   height: 20px;
 }
 
-.lib-items.cards .item .row-btn {
+.acts {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+
+.lib-items.cards .item .acts {
   position: absolute;
   top: 12px;
-  width: 32px;
-  height: 32px;
+  right: 12px;
+  gap: 4px;
+}
+
+.lib-items.cards .item .row-btn {
+  width: 34px;
+  height: 34px;
   background: color-mix(in srgb, var(--bg) 72%, transparent);
   color: var(--text);
 }
 
-.lib-items.cards .item .row-btn:nth-of-type(1) {
-  right: 48px;
+.row-btn.fav-on {
+  color: #eab308;
 }
 
-.lib-items.cards .item .row-btn:nth-of-type(2) {
-  right: 12px;
+.ch-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 /* Логотип: пока нет — буква на цветном фоне */

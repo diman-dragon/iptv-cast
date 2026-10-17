@@ -1,8 +1,8 @@
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import { kvDel, kvGet, kvSet } from '../core/kv.js';
 import { parseM3u } from './parse.js';
-import { MINE_ID } from './sources.js';
-import { customChannels } from './store.js';
+import { FAV_ID, HISTORY_ID, MINE_ID } from './sources.js';
+import { customChannels, favorites, history } from './store.js';
 
 const TTL = 12 * 3600 * 1000; // сколько кэш считается свежим
 const MEM_MAX = 3;
@@ -97,7 +97,9 @@ function remember(id, value) {
 
 // Каналы источника. force — игнорировать кэш. Возвращает { channels, time, cached }.
 export async function loadSource(source, { force = false } = {}) {
-  if (source.id === MINE_ID) return { channels: customChannels(), time: Date.now(), cached: true };
+  // Виртуальные источники читаются из хранилища на лету и не кэшируются.
+  const local = { [FAV_ID]: favorites, [HISTORY_ID]: history, [MINE_ID]: customChannels }[source.id];
+  if (local) return { channels: local(), time: Date.now(), cached: true };
 
   const hit = mem.get(source.id);
   if (hit && !force) return { ...hit, cached: true };

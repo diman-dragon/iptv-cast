@@ -2,19 +2,27 @@ import { CATALOG } from '../data/catalog.js';
 import { getLang } from '../i18n/i18n.js';
 import { customSources } from './store.js';
 
+export const FAV_ID = 'fav';
+export const HISTORY_ID = 'history';
 export const MINE_ID = 'mine-channels';
 
-// «Мои каналы» — виртуальный источник: одиночные каналы, добавленные вручную.
-const MINE = {
-  id: MINE_ID,
+// Виртуальные источники: их каналы собираются из того, что хранит приложение.
+const virtual = (id, emoji, ru, en, dru, den) => ({
+  id,
   type: 'mine',
-  emoji: '⭐',
+  emoji,
   virtual: true,
-  name: { ru: 'Мои каналы', en: 'My channels' },
-  desc: { ru: 'Каналы, добавленные вручную по ссылке', en: 'Channels you added by hand with a link' },
-};
+  name: { ru, en },
+  desc: { ru: dru, en: den },
+});
 
-export const allSources = () => [MINE, ...customSources(), ...CATALOG];
+const VIRTUAL = [
+  virtual(FAV_ID, '⭐', 'Избранное', 'Favorites', 'Каналы, отмеченные звёздочкой', 'Channels you starred'),
+  virtual(HISTORY_ID, '🕘', 'История', 'History', 'Что вы смотрели недавно', 'What you watched recently'),
+  virtual(MINE_ID, '📌', 'Мои каналы', 'My channels', 'Каналы, добавленные вручную по ссылке', 'Channels you added by hand with a link'),
+];
+
+export const allSources = () => [...VIRTUAL, ...customSources(), ...CATALOG];
 export const findSource = (id) => allSources().find((s) => s.id === id);
 
 const pick = (v) => (typeof v === 'string' ? v : (v?.[getLang()] ?? v?.en ?? ''));

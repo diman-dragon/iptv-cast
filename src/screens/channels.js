@@ -1,18 +1,14 @@
 import { el, button, icon, image } from '../core/dom.js';
-import { bindAria, bindText } from '../i18n/bind.js';
+import { bindAria } from '../i18n/bind.js';
 import { t } from '../i18n/i18n.js';
-import { navigate } from '../app/router.js';
 import { cleanName, tagsOf } from '../iptv/parse.js';
-import { castChannel, getPlayback, onPlayback, openExternal, playChannel } from '../iptv/playback.js';
+import { castChannel, getPlayback, onPlayback, playChannel } from '../iptv/playback.js';
 import { loadSource } from '../iptv/playlist.js';
-import { findSource, nameOf } from '../iptv/sources.js';
-import { favorites, getPref, history, isFavorite, onStoreChange, removeChannel, setPref, toggleFavorite } from '../iptv/store.js';
-import { getView, onView, setView } from '../iptv/view-state.js';
+import { FAV_ID, HISTORY_ID, MINE_ID, findSource, nameOf } from '../iptv/sources.js';
+import { getPref, isFavorite, onStoreChange, removeChannel, setPref, toggleFavorite } from '../iptv/store.js';
 import { createSelect } from '../ui/field.js';
 import { ICONS } from '../ui/icons.js';
 import { createSearch } from '../ui/search.js';
-import { createSegmented } from '../ui/segmented.js';
-import { openSheet } from '../ui/sheet.js';
 import { createStateBox } from '../ui/state-box.js';
 import { toast } from '../ui/toast.js';
 import { createViewSwitch } from '../ui/view-switch.js';
@@ -30,8 +26,7 @@ function createThumb(ch) {
   const thumb = el('div', 'thumb');
   const name = cleanName(ch.name);
   thumb.style.setProperty('--h', String(hue(name)));
-  const letter = el('span', 'thumb-letter', [...name.trim()][0]?.toUpperCase() ?? '?');
-  thumb.append(letter);
+  thumb.append(el('span', 'thumb-letter', [...name.trim()][0]?.toUpperCase() ?? '?'));
   if (/^https?:/i.test(ch.logo)) {
     const img = image('thumb-img', ch.logo);
     img.addEventListener('load', () => thumb.classList.add('has-logo'));
@@ -41,39 +36,36 @@ function createThumb(ch) {
   return thumb;
 }
 
-// Каналы: выбранный источник, избранное или история.
-export function renderChannels() {
-  const root = el('section', 'channels');
-  let all = []; // каналы текущего режима
+// Список каналов одного источника — внутри экрана «Каталог». onBack — «назад к каталогу».
+export function createChannelsView({ onBack }) {
+  const node = el('div', 'channels');
+  let source = null;
+  let all = [];
   let filtered = [];
   let shown = 0;
+  let query = '';
+  let group = '';
   let loading = false;
   let failed = false;
   let failText = '';
   let seq = 0; // номер последней загрузки: устаревшие ответы отбрасываем
+  let grid = null;
+  let observer = null;
 
-  // ---------- верхняя часть
-  const modes = createSegmented(
-    [
-      { id: 'source', labelKey: 'ch.source' },
-      { id: 'fav', labelKey: 'ch.fav' },
-      { id: 'history', labelKey: 'ch.history' },
-    ],
-    () => getView().mode,
-    (mode) => setView({ mode, query: '', group: '' }),
-  );
-  modes.classList.add('seg-full');
-
-  const srcBtn = button('src-chip', () => navigate('catalog'));
-  const srcName = el('span', 'src-chip-name');
-  srcBtn.append(icon(ICONS.back), srcName);
-
-  const search = createSearch('ch.search', (query) => {
-    setView({ query });
-  });
+  // ---------- верх: назад, обновить, поиск, группа, вид
+  const backBtn = button('src-chip', onBack);
+  const backName = el('span', 'src-chip-name');
+  backBtn.append(icon(ICONS.back), backName);
   const refreshBtn = button('icon-btn', () => load(true));
   refreshBtn.append(icon(ICONS.refresh));
   bindAria(refreshBtn, 'ch.refresh');
+  const top = el('div', 'ch-top');
+  top.append(backBtn, refreshBtn);
+
+  const search = createSearch('ch.search', (text) => {
+    query = text;
+    applyFilter();
+  });
   const viewSwitch = createViewSwitch(
     () => getPref('cview'),
     (v) => {
@@ -82,66 +74,68 @@ export function renderChannels() {
     },
   );
   const groupBox = el('div', 'group-box');
-  const searchRow = el('div', 'search-row');
-  searchRow.append(search, refreshBtn);
   const toolsRow = el('div', 'tools-row');
-  const status = el('div', 'muted small');
   toolsRow.append(groupBox, viewSwitch);
+  const status = el('div', 'muted small');
   const head = el('div', 'ch-head');
-  head.append(modes, srcBtn, searchRow, toolsRow, status);
+  head.append(top, search, toolsRow, status);
 
   const list = el('div');
-  const more = bindText(button('btn ghost more-btn', () => drawMore()), 'ch.more');
-  root.append(head, list);
+  const more = button('btn ghost more-btn', () => drawMore());
+  more.textContent = t('ch.more');
+  document.addEventListener('langchange', () => (more.textContent = t('ch.more')));
+  node.append(head, list);
 
-  // ---------- меню строки
-  function menuOf(ch) {
-    const fav = isFavorite(ch.url);
-    const actions = [
-      { label: t('ch.play'), run: () => playChannel(ch, filtered) },
-      { label: t('ch.cast'), run: () => castChannel(ch, filtered).catch(() => toast(t('cast.unavailable'))) },
-      { label: t('ch.external'), run: () => openExternal(ch).catch(() => toast(t('ch.noApp'))) },
-      { label: fav ? t('ch.unfav') : t('ch.addFav'), run: () => toast(toggleFavorite(ch) ? t('ch.favAdded') : t('ch.favRemoved')) },
-      { label: t('ch.copy'), run: () => navigator.clipboard?.writeText(ch.url).then(() => toast(t('cat.copied'))) },
-    ];
-    if (getView().mode === 'source' && getView().sourceId === 'mine-channels') {
-      actions.push({ label: t('ch.remove'), danger: true, run: () => removeChannel(ch.url) });
-    }
-    openSheet(cleanName(ch.name), actions);
-  }
-
+  // ---------- строка канала
   function createItem(ch) {
     const item = el('div', 'item');
-    const playing = getPlayback().channel?.url === ch.url;
-    item.classList.toggle('playing', playing);
     item._url = ch.url;
+    item.classList.toggle('playing', getPlayback().channel?.url === ch.url);
     const meta = el('div', 'meta');
-    const name = el('div', 'fname', cleanName(ch.name));
-    if (isFavorite(ch.url)) name.prepend(icon(ICONS.starFill, 'fav-mark'));
+    const name = el('div', 'fname');
+    const label = el('span', '', cleanName(ch.name));
     const sub = el('div', 'fsub');
     sub.textContent = [ch.group, ...tagsOf(ch.name).slice(0, 2)].filter(Boolean).join(' · ');
+    name.append(label);
     meta.append(name, sub);
+
+    const acts = el('div', 'acts');
+    const favBtn = button('row-btn', (e) => {
+      e.stopPropagation();
+      toast(toggleFavorite(ch) ? t('ch.favAdded') : t('ch.favRemoved'));
+    });
+    bindAria(favBtn, 'ch.addFav');
     const castBtn = button('row-btn', (e) => {
       e.stopPropagation();
       castChannel(ch, filtered).catch(() => toast(t('cast.unavailable')));
     });
     castBtn.append(icon(ICONS.cast));
     bindAria(castBtn, 'ch.cast');
-    const moreBtn = button('row-btn', (e) => {
-      e.stopPropagation();
-      menuOf(ch);
-    });
-    moreBtn.append(icon(ICONS.more));
-    bindAria(moreBtn, 'lib.menu');
-    item.append(createThumb(ch), meta, castBtn, moreBtn);
+    acts.append(favBtn, castBtn);
+    if (source?.id === MINE_ID) {
+      const del = button('row-btn', (e) => {
+        e.stopPropagation();
+        removeChannel(ch.url);
+      });
+      del.append(icon(ICONS.trash));
+      bindAria(del, 'ch.remove');
+      acts.append(del);
+    }
+
+    // Звёздочка и пометка в названии отражают избранное.
+    item._sync = () => {
+      const fav = isFavorite(ch.url);
+      favBtn.replaceChildren(icon(fav ? ICONS.starFill : ICONS.star));
+      favBtn.classList.toggle('fav-on', fav);
+      name.querySelector('.fav-mark')?.remove();
+    };
+    item._sync();
+    item.append(createThumb(ch), meta, acts);
     item.addEventListener('click', () => playChannel(ch, filtered));
     return item;
   }
 
-  // ---------- список
-  let grid = null;
-  let observer = null;
-
+  // ---------- список с постраничной подгрузкой
   function drawMore() {
     if (!grid) return;
     more.remove();
@@ -158,29 +152,31 @@ export function renderChannels() {
     }
   }
 
+  function emptyBox() {
+    const id = source?.id;
+    if (id === FAV_ID) return createStateBox(ICONS.star, 'ch.noFav', 'ch.noFavHint');
+    if (id === HISTORY_ID) return createStateBox(ICONS.clock, 'ch.noHistory', 'ch.noHistoryHint');
+    if (id === MINE_ID) return createStateBox(ICONS.plus, 'ch.noMine', 'ch.noMineHint');
+    return createStateBox(ICONS.search, 'ch.noMatch');
+  }
+
   function drawList() {
     observer?.disconnect();
     shown = 0;
     grid = null;
-    const v = getView();
     if (loading) return list.replaceChildren(el('div', 'spinner'));
     if (failed) {
       const box = createStateBox(ICONS.refresh, 'ch.error', 'ch.errorHint', 'ch.retry', () => load(true));
       box.querySelector('.empty-title').after(el('code', 'err-detail', failText));
       return list.replaceChildren(box);
     }
-    if (v.mode === 'source' && !v.sourceId) return list.replaceChildren(createStateBox(ICONS.catalog, 'ch.noSource', 'ch.noSourceHint', 'ch.toCatalog', () => navigate('catalog')));
-    if (!filtered.length) {
-      const key = v.mode === 'fav' ? 'ch.noFav' : v.mode === 'history' ? 'ch.noHistory' : 'ch.noMatch';
-      return list.replaceChildren(createStateBox(v.mode === 'fav' ? ICONS.star : ICONS.search, key, v.mode === 'source' ? null : `${key}Hint`));
-    }
+    if (!filtered.length) return list.replaceChildren(emptyBox());
     grid = el('div', `lib-items ${getPref('cview')}`);
     list.replaceChildren(grid);
     drawMore();
   }
 
   function applyFilter() {
-    const { query, group } = getView();
     const q = query.toLowerCase();
     filtered = all.filter((c) => (!group || c.group === group) && (!q || c.name.toLowerCase().includes(q)));
     status.textContent = loading ? t('ch.loading') : all.length ? t('ch.count', { n: filtered.length, total: all.length }) : '';
@@ -191,70 +187,65 @@ export function renderChannels() {
     const groups = [...new Set(all.map((c) => c.group).filter(Boolean))].sort((a, b) => a.localeCompare(b));
     groupBox.hidden = groups.length < 2;
     if (groupBox.hidden) return;
-    const select = createSelect([{ id: '', label: t('ch.allGroups') }, ...groups.map((g) => ({ id: g, label: g }))], getView().group);
-    select.addEventListener('change', () => setView({ group: select.value }));
+    const select = createSelect([{ id: '', label: t('ch.allGroups') }, ...groups.map((g) => ({ id: g, label: g }))], group);
+    select.addEventListener('change', () => {
+      group = select.value;
+      applyFilter();
+    });
     groupBox.replaceChildren(select);
   }
 
   async function load(force = false) {
-    const v = getView();
+    if (!source) return;
     const mine = ++seq;
     failed = false;
-    search.value = v.query;
-    srcBtn.hidden = v.mode !== 'source';
-    refreshBtn.hidden = v.mode !== 'source';
-    if (v.mode === 'fav') all = favorites();
-    else if (v.mode === 'history') all = history();
-    else {
-      const source = v.sourceId && findSource(v.sourceId);
-      srcName.textContent = source ? nameOf(source) : t('ch.noSource');
-      all = [];
-      if (source) {
-        loading = true;
-        applyFilter();
-        try {
-          const res = await loadSource(source, { force });
-          if (mine !== seq) return;
-          all = res.channels;
-        } catch (e) {
-          if (mine !== seq) return;
-          failed = true;
-          failText = String(e?.message ?? e);
-        }
-        loading = false;
-      }
+    backName.textContent = nameOf(source);
+    refreshBtn.hidden = Boolean(source.virtual);
+    loading = true;
+    all = [];
+    applyFilter();
+    try {
+      const res = await loadSource(source, { force });
+      if (mine !== seq) return;
+      all = res.channels;
+    } catch (e) {
+      if (mine !== seq) return;
+      failed = true;
+      failText = String(e?.message ?? e);
     }
+    loading = false;
     drawGroups();
     applyFilter();
   }
 
-  // Режим, источник или избранное изменились — перечитываем; поиск и группа — только фильтруем.
-  let last = '';
-  onView((v) => {
-    const key = `${v.mode}|${v.sourceId}`;
-    if (key !== last) {
-      last = key;
-      load();
-    } else {
-      search.value = v.query;
+  // Открыть источник по id.
+  function open(id) {
+    source = findSource(id) ?? null;
+    query = '';
+    group = '';
+    search.value = '';
+    if (source) load();
+  }
+
+  // Избранное, история и «мои каналы» меняются сами — перечитываем без индикатора загрузки.
+  onStoreChange(async (what) => {
+    if (!source) return;
+    const live = { fav: FAV_ID, history: HISTORY_ID, channels: MINE_ID }[what];
+    if (live && live === source.id) {
+      all = (await loadSource(source)).channels;
+      drawGroups();
       applyFilter();
+    } else if (what === 'fav') {
+      grid?.querySelectorAll('.item').forEach((n) => n._sync?.());
     }
-  });
-  onStoreChange((what) => {
-    const v = getView();
-    if ((what === 'fav' && v.mode === 'fav') || (what === 'history' && v.mode === 'history') || (what === 'channels' && v.sourceId === 'mine-channels')) load();
-    else if (what === 'fav') drawList();
   });
   onPlayback(() => grid?.querySelectorAll('.item').forEach((n) => n.classList.toggle('playing', n._url === getPlayback().channel?.url)));
   document.addEventListener('langchange', () => {
+    if (!source) return;
+    backName.textContent = nameOf(source);
     drawGroups();
     applyFilter();
   });
 
-  const markModes = () => ['source', 'fav', 'history'].forEach((id, i) => modes.children[i].classList.toggle('on', id === getView().mode));
-  onView(markModes);
-  last = `${getView().mode}|${getView().sourceId}`;
-  markModes();
-  applyFilter();
-  return root;
+  return { node, open };
 }

@@ -6,11 +6,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import androidx.mediarouter.app.MediaRouteChooserDialog;
-import androidx.media3.common.MediaItem;
-import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
 import androidx.media3.exoplayer.ExoPlayer;
+import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -22,9 +21,12 @@ import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.CastSession;
 import com.google.android.gms.cast.framework.SessionManagerListener;
 import com.google.android.gms.cast.framework.media.RemoteMediaClient;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
+import org.json.JSONException;
 
 /**
  * Bridge between the web UI and the native side: playback (Media3), sleep timer,
@@ -37,9 +39,7 @@ public class IptvPlugin extends Plugin {
   private final Handler main = new Handler(Looper.getMainLooper());
   private CastContext cast;
   private ExoPlayer listened;
-  private String title = "";
-  private String url = "";
-  private String error = "";
+  private boolean moved = true; // result of the last zap
   private long sleepEnd = 0; // SystemClock.elapsedRealtime() deadline, 0 = off
 
   // ------------------------------------------------------------------ lifecycle
@@ -84,7 +84,7 @@ public class IptvPlugin extends Plugin {
         new Player.Listener() {
           @Override
           public void onIsPlayingChanged(boolean playing) {
-            if (playing) error = "";
+            if (playing) ChannelQueue.error = "";
             push(p);
           }
 
@@ -95,7 +95,7 @@ public class IptvPlugin extends Plugin {
 
           @Override
           public void onPlayerError(PlaybackException e) {
-            error = e.getErrorCodeName();
+            ChannelQueue.error = e.getErrorCodeName();
             push(p);
           }
         });
@@ -106,43 +106,75 @@ public class IptvPlugin extends Plugin {
   }
 
   private JSObject stateOf(Player p) {
+    ChannelQueue.Channel c = ChannelQueue.current();
     JSObject o = new JSObject();
     o.put("loaded", p.getMediaItemCount() > 0);
     o.put("playing", p.isPlaying());
     o.put("loading", p.getPlaybackState() == Player.STATE_BUFFERING);
-    o.put("error", error);
-    o.put("title", title);
-    o.put("url", url);
+    o.put("error", ChannelQueue.error);
+    o.put("title", c == null ? "" : c.title);
+    o.put("url", c == null ? "" : c.url);
+    o.put("sub", c == null ? "" : c.sub);
+    o.put("logo", c == null ? "" : c.logo);
+    o.put("hasPrev", ChannelQueue.hasPrev());
+    o.put("hasNext", ChannelQueue.hasNext());
+    o.put("moved", moved);
     o.put("sleepLeft", sleepEnd == 0 ? 0 : Math.max(0, (sleepEnd - SystemClock.elapsedRealtime()) / 1000));
     return o;
   }
 
-  /** channel: {url, title, subtitle, logo, ua, ref}. Starts the service and plays. */
+  /**
+   * Plays a channel. {url, title, subtitle, logo, ua, ref} plus optionally queue: [channel, ...] and
+   * index: the position in the queue, so previous / next work natively.
+   */
   @PluginMethod
   public void play(PluginCall call) {
-    String stream = call.getString("url");
-    if (stream == null || stream.isEmpty()) {
-      call.reject("url required");
+    List<ChannelQueue.Channel> list = new ArrayList<>();
+    int index = call.getInt("index", 0);
+    JSArray queue = call.getArray("queue");
+    try {
+      if (queue != null) {
+        for (int i = 0; i < queue.length(); i++) list.add(ChannelQueue.Channel.from(queue.getJSONObject(i)));
+      }
+    } catch (JSONException e) {
+      call.reject("bad queue");
       return;
     }
-    String name = call.getString("title", "");
-    String sub = call.getString("subtitle", "");
-    String logo = call.getString("logo", "");
+    if (list.isEmpty()) {
+      String stream = call.getString("url");
+      if (stream == null || stream.isEmpty()) {
+        call.reject("url required");
+        return;
+      }
+      list.add(
+          new ChannelQueue.Channel(
+              stream,
+              call.getString("title", ""),
+              call.getString("subtitle", ""),
+              call.getString("logo", ""),
+              call.getString("ua", ""),
+              call.getString("ref", "")));
+      index = 0;
+    }
+    final int start = Math.max(0, Math.min(index, list.size() - 1));
     onPlayer(
         call,
         p -> {
-          PlaybackStarter.start(getContext(), getActivity());
-          error = "";
-          title = name;
-          url = stream;
-          PlayerHolder.setHeaders(call.getString("ua", ""), call.getString("ref", ""));
-          MediaMetadata.Builder md = new MediaMetadata.Builder().setTitle(name).setArtist(sub);
-          if (logo.startsWith("http")) md.setArtworkUri(Uri.parse(logo));
-          p.setMediaItem(
-              new MediaItem.Builder().setUri(stream).setMediaId(stream).setMediaMetadata(md.build()).build());
-          p.setVolume(1f);
-          p.prepare();
-          p.play();
+          moved = true;
+          ChannelQueue.set(list, start);
+          ChannelQueue.start(getContext());
+        });
+  }
+
+  /** step: +1 next, -1 previous. The state tells whether it moved. */
+  @PluginMethod
+  public void zap(PluginCall call) {
+    int step = call.getInt("step", 1);
+    onPlayer(
+        call,
+        p -> {
+          moved = ChannelQueue.move(step);
+          if (moved) ChannelQueue.start(getContext());
         });
   }
 
@@ -164,9 +196,7 @@ public class IptvPlugin extends Plugin {
           sleepEnd = 0;
           p.stop();
           p.clearMediaItems();
-          title = "";
-          url = "";
-          error = "";
+          ChannelQueue.clear();
         });
   }
 
@@ -181,9 +211,7 @@ public class IptvPlugin extends Plugin {
     getActivity()
         .runOnUiThread(
             () -> {
-              Intent i = new Intent(getContext(), PlayerActivity.class);
-              i.putExtra("title", title);
-              getActivity().startActivity(i);
+              getActivity().startActivity(new Intent(getContext(), PlayerActivity.class));
               call.resolve();
             });
   }
