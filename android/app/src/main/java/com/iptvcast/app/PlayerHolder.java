@@ -12,7 +12,7 @@ import java.util.Map;
 
 /** One ExoPlayer for the whole app, shared by the plugin, the video screen and the playback service. */
 final class PlayerHolder {
-  static final String DEFAULT_UA = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 IPTVCast";
+  static final String DEFAULT_UA = Net.UA;
 
   private static ExoPlayer player;
   // Headers can differ per channel: the factory is shared, we change its defaults before each start.

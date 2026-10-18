@@ -3,11 +3,13 @@ import { bindText } from '../i18n/bind.js';
 import { t } from '../i18n/i18n.js';
 import { TYPES } from '../data/types.js';
 import { navigate } from '../app/router.js';
+import { nameOf } from '../iptv/sources.js';
 import { parsePack } from '../iptv/import.js';
 import { parseM3u } from '../iptv/parse.js';
 import { cachePlaylist, downloadAny, saveFileSource } from '../iptv/playlist.js';
-import { addChannel, addSource, addSources, customSources } from '../iptv/store.js';
+import { MINE_ID, addSource, addSources, customSources, saveLocalChannel } from '../iptv/store.js';
 import { setView } from '../iptv/view-state.js';
+import { isStreamUrl } from './channel.js';
 import { createField, createSelect } from '../ui/field.js';
 import { closeModal, openModal } from '../ui/modal.js';
 import { createSegmented } from '../ui/segmented.js';
@@ -39,6 +41,7 @@ export function openAddDialog() {
   let url;
   let group;
   let picked;
+  let target;
   let busy = false;
 
   const draw = () => {
@@ -49,7 +52,15 @@ export function openAddDialog() {
     group = createField('add.group', { placeholderKey: 'add.groupPh' });
     const nodes = [];
     if (mode === 'channel') {
-      nodes.push(name.node, url.node, group.node);
+      const targets = [{ id: MINE_ID, label: t('add.targetMine') }, ...customSources().filter((x) => x.local).map((x) => ({ id: x.id, label: nameOf(x) }))];
+      target = createSelect(targets, MINE_ID);
+      const targetRow = el('label', 'field');
+      targetRow.append(bindText(el('span', 'field-label'), 'add.target'), target);
+      nodes.push(targetRow, name.node, url.node, group.node);
+    } else if (mode === 'new') {
+      const typeRow = el('label', 'field');
+      typeRow.append(bindText(el('span', 'field-label'), 'add.type'), typeSelect);
+      nodes.push(bindText(el('div', 'field-hint'), 'add.newHint'), name.node, typeRow);
     } else {
       const typeRow = el('label', 'field');
       typeRow.append(bindText(el('span', 'field-label'), 'add.type'), typeSelect);
@@ -101,10 +112,20 @@ export function openAddDialog() {
     try {
       if (mode === 'channel') {
         const link = url.input.value.trim();
-        if (!isUrl(link) && !/^(rtmp|rtsp|udp):\/\//i.test(link)) return (error.textContent = t('add.badUrl'));
-        addChannel({ name: name.input.value.trim() || t('add.unnamed'), url: link, group: group.input.value.trim() || t('add.myGroup') });
+        if (!isStreamUrl(link)) return (error.textContent = t('add.badUrl'));
+        saveLocalChannel(target.value, {
+          name: name.input.value.trim() || t('add.unnamed'),
+          url: link,
+          group: group.input.value.trim() || t('add.myGroup'),
+        });
         closeModal();
         return toast(t('add.channelDone'));
+      }
+      if (mode === 'new') {
+        const created = addSource({ name: name.input.value.trim() || t('add.unnamedList'), type: typeSelect.value, local: true });
+        closeModal();
+        toast(t('add.newDone'));
+        return openSourceNow(created);
       }
       busy = true;
       if (mode === 'link') {
@@ -135,6 +156,7 @@ export function openAddDialog() {
       { id: 'link', labelKey: 'add.modeLink' },
       { id: 'file', labelKey: 'add.modeFile' },
       { id: 'channel', labelKey: 'add.modeChannel' },
+      { id: 'new', labelKey: 'add.modeNew' },
     ],
     () => mode,
     (id) => {

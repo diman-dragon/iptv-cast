@@ -1,9 +1,9 @@
 import { getLang } from '../i18n/i18n.js';
-import { customSources } from './store.js';
+import { MINE_ID, customSources } from './store.js';
 
 export const FAV_ID = 'fav';
 export const HISTORY_ID = 'history';
-export const MINE_ID = 'mine-channels';
+export { MINE_ID };
 
 // Виртуальные источники: их каналы собираются из того, что хранит приложение.
 const virtual = (id, emoji, ru, en, dru, den) => ({
@@ -18,7 +18,7 @@ const virtual = (id, emoji, ru, en, dru, den) => ({
 const VIRTUAL = [
   virtual(FAV_ID, '⭐', 'Избранное', 'Favorites', 'Каналы, отмеченные звёздочкой', 'Channels you starred'),
   virtual(HISTORY_ID, '🕘', 'История', 'History', 'Что вы смотрели недавно', 'What you watched recently'),
-  virtual(MINE_ID, '📌', 'Мои каналы', 'My channels', 'Каналы, добавленные вручную по ссылке', 'Channels you added by hand with a link'),
+  { ...virtual(MINE_ID, '📌', 'Мои каналы', 'My channels', 'Каналы, добавленные вручную по ссылке', 'Channels you added by hand with a link'), local: true },
 ];
 
 // В приложении нет встроенных плейлистов: только то, что пользователь загрузил сам.
@@ -30,6 +30,7 @@ export const nameOf = (s) => pick(s.name);
 
 export function descOf(s) {
   if (s.desc) return pick(s.desc);
+  if (s.local) return pick({ ru: 'Свой плейлист', en: 'My playlist' });
   if (s.file) return '📄';
   try {
     return new URL(s.url).host;

@@ -4,8 +4,9 @@ import { t } from '../i18n/i18n.js';
 import { cleanName, tagsOf } from '../iptv/parse.js';
 import { castChannel, getPlayback, onPlayback, playChannel } from '../iptv/playback.js';
 import { loadSource } from '../iptv/playlist.js';
-import { FAV_ID, HISTORY_ID, MINE_ID, findSource, nameOf } from '../iptv/sources.js';
-import { getPref, isFavorite, onStoreChange, removeChannel, setPref, toggleFavorite } from '../iptv/store.js';
+import { FAV_ID, HISTORY_ID, findSource, nameOf } from '../iptv/sources.js';
+import { deleteLocalChannel, getPref, isFavorite, onStoreChange, setPref, toggleFavorite } from '../iptv/store.js';
+import { openChannelDialog } from '../dialogs/channel.js';
 import { createSelect } from '../ui/field.js';
 import { ICONS } from '../ui/icons.js';
 import { createSearch } from '../ui/search.js';
@@ -59,8 +60,14 @@ export function createChannelsView({ onBack }) {
   const refreshBtn = button('icon-btn', () => load(true));
   refreshBtn.append(icon(ICONS.refresh));
   bindAria(refreshBtn, 'ch.refresh');
+  const addBtn = button('icon-btn', () => source && openChannelDialog(source.id));
+  addBtn.append(icon(ICONS.plus));
+  bindAria(addBtn, 'ch.add');
+  addBtn.hidden = true;
   const top = el('div', 'ch-top');
-  top.append(backBtn, refreshBtn);
+  const topActions = el('div', 'acts');
+  topActions.append(addBtn, refreshBtn);
+  top.append(backBtn, topActions);
 
   const search = createSearch('ch.search', (text) => {
     query = text;
@@ -112,14 +119,22 @@ export function createChannelsView({ onBack }) {
     castBtn.append(icon(ICONS.cast));
     bindAria(castBtn, 'ch.cast');
     acts.append(favBtn, castBtn);
-    if (source?.id === MINE_ID) {
+    if (source?.local) {
+      const sid = source.id;
+      const edit = button('row-btn', (e) => {
+        e.stopPropagation();
+        openChannelDialog(sid, ch);
+      });
+      edit.append(icon(ICONS.edit));
+      bindAria(edit, 'ch.edit');
       const del = button('row-btn', (e) => {
         e.stopPropagation();
-        removeChannel(ch.url);
+        deleteLocalChannel(sid, ch.url);
+        toast(t('ch.removed'));
       });
       del.append(icon(ICONS.trash));
       bindAria(del, 'ch.remove');
-      acts.append(del);
+      acts.append(edit, del);
     }
 
     // Звёздочка и пометка в названии отражают избранное.
@@ -156,7 +171,7 @@ export function createChannelsView({ onBack }) {
     const id = source?.id;
     if (id === FAV_ID) return createStateBox(ICONS.star, 'ch.noFav', 'ch.noFavHint');
     if (id === HISTORY_ID) return createStateBox(ICONS.clock, 'ch.noHistory', 'ch.noHistoryHint');
-    if (id === MINE_ID) return createStateBox(ICONS.plus, 'ch.noMine', 'ch.noMineHint');
+    if (source?.local) return createStateBox(ICONS.plus, 'ch.noMine', 'ch.noMineHint');
     return createStateBox(ICONS.search, 'ch.noMatch');
   }
 
@@ -200,7 +215,8 @@ export function createChannelsView({ onBack }) {
     const mine = ++seq;
     failed = false;
     backName.textContent = nameOf(source);
-    refreshBtn.hidden = Boolean(source.virtual);
+    refreshBtn.hidden = Boolean(source.virtual || source.local);
+    addBtn.hidden = !source.local;
     loading = true;
     all = [];
     applyFilter();
@@ -230,8 +246,8 @@ export function createChannelsView({ onBack }) {
   // Избранное, история и «мои каналы» меняются сами — перечитываем без индикатора загрузки.
   onStoreChange(async (what) => {
     if (!source) return;
-    const live = { fav: FAV_ID, history: HISTORY_ID, channels: MINE_ID }[what];
-    if (live && live === source.id) {
+    const live = (what === 'fav' && source.id === FAV_ID) || (what === 'history' && source.id === HISTORY_ID) || (what === 'channels' && source.local);
+    if (live) {
       all = (await loadSource(source)).channels;
       drawGroups();
       applyFilter();

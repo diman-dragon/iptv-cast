@@ -15,6 +15,10 @@ const web = {
   },
   state: async () => state,
   castState: async () => castOff,
+  // В браузере потоки не проверить (CORS): считаем рабочими, чтобы интерфейс можно было отлаживать.
+  probe: async () => ({ ok: true, reason: 'ok', code: 200, info: 'web', ms: 1 }),
+  dlnaScan: async () => ({ devices: [] }),
+  netInfo: async () => ({ ip: '', gms: -1, castReady: false }),
   addListener: async () => ({ remove() {} }),
 };
 

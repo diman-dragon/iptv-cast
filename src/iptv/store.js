@@ -1,4 +1,4 @@
-import { readJson, writeJson } from '../core/storage.js';
+import { readJson, removeStored, writeJson } from '../core/storage.js';
 
 // Всё пользовательское: свои источники, свои каналы, избранное, история, настройки.
 const K = {
@@ -9,6 +9,8 @@ const K = {
   prefs: 'iptvcast.prefs',
 };
 const HISTORY_MAX = 40;
+export const MINE_ID = 'mine-channels'; // «Мои каналы» — встроенный свой плейлист
+const CHECKS = 'iptvcast.checks';
 
 const listeners = new Set();
 export const onStoreChange = (fn) => listeners.add(fn);
@@ -17,6 +19,8 @@ const changed = (what) => listeners.forEach((fn) => fn(what));
 // ---------- настройки
 const DEFAULTS = {
   preferCast: true, // если ТВ подключён — каналы идут на ТВ
+  castProxy: true, // Chromecast получает поток через телефон (CORS, User-Agent, HLS)
+  dlnaProxy: false, // DLNA-телевизор берёт поток напрямую; через телефон — только по желанию
   ua: '', // свой User-Agent для всех каналов
   view: 'list', // вид библиотеки
   cview: 'list', // вид списка каналов
@@ -41,16 +45,18 @@ export function addSources(list) {
   const urls = new Set(have.filter((x) => !x.file).map((x) => x.url));
   const added = [];
   list.forEach((x) => {
-    if (!x.file && urls.has(x.url)) return;
-    urls.add(x.url);
+    const remote = x.url && !x.file && !x.local;
+    if (remote && urls.has(x.url)) return;
+    if (remote) urls.add(x.url);
     added.push({
       id: `my-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
       name: x.name,
       desc: x.desc,
       url: x.url || '',
       type: x.type || 'mix',
-      emoji: x.emoji || (x.file ? '📄' : '🔗'),
+      emoji: x.emoji || (x.local ? '📝' : x.file ? '📄' : '🔗'),
       file: Boolean(x.file),
+      local: Boolean(x.local),
     });
   });
   if (added.length) {
@@ -62,26 +68,60 @@ export function addSources(list) {
 
 export const addSource = (x) => addSources([x])[0];
 
+// Правка плейлиста: patch = { name, emoji, type, desc, url }.
+export function updateSource(id, patch) {
+  writeJson(K.sources, customSources().map((s) => (s.id === id ? { ...s, ...patch } : s)));
+  changed('sources');
+}
+
 export function removeSource(id) {
   writeJson(K.sources, customSources().filter((s) => s.id !== id));
+  removeStored(localKey(id));
+  clearCheck(id);
   changed('sources');
 }
 
 export function removeAllSources() {
+  customSources().forEach((s) => removeStored(localKey(s.id)));
   writeJson(K.sources, []);
+  writeJson(CHECKS, {});
   changed('sources');
 }
 
-// ---------- свои каналы
-export const customChannels = () => readJson(K.channels, []);
+// ---------- результаты проверки плейлистов
+export const getChecks = () => readJson(CHECKS, {});
 
-export function addChannel({ name, url, group, logo = '' }) {
-  writeJson(K.channels, [...customChannels(), { name, url, group, logo, ua: '', ref: '' }]);
+export function setCheck(id, result) {
+  writeJson(CHECKS, { ...getChecks(), [id]: { ...result, time: Date.now() } });
+  changed('checks');
+}
+
+export function clearCheck(id) {
+  const all = getChecks();
+  if (!(id in all)) return;
+  delete all[id];
+  writeJson(CHECKS, all);
+  changed('checks');
+}
+
+// ---------- каналы своих плейлистов (MINE_ID — «Мои каналы», остальные — созданные пользователем)
+const localKey = (id) => (id === MINE_ID ? K.channels : `iptvcast.lc.${id}`);
+
+export const localChannels = (id) => readJson(localKey(id), []);
+
+// Создать канал или (если задан oldUrl) изменить существующий.
+export function saveLocalChannel(id, channel, oldUrl) {
+  const list = localChannels(id);
+  const at = list.findIndex((c) => c.url === (oldUrl ?? channel.url));
+  const item = { ua: '', ref: '', logo: '', ...(at >= 0 ? list[at] : {}), ...channel };
+  if (at >= 0) list[at] = item;
+  else list.push(item);
+  writeJson(localKey(id), list);
   changed('channels');
 }
 
-export function removeChannel(url) {
-  writeJson(K.channels, customChannels().filter((c) => c.url !== url));
+export function deleteLocalChannel(id, url) {
+  writeJson(localKey(id), localChannels(id).filter((c) => c.url !== url));
   changed('channels');
 }
 

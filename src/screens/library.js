@@ -3,9 +3,11 @@ import { bindText } from '../i18n/bind.js';
 import { t } from '../i18n/i18n.js';
 import { TYPES, findType } from '../data/types.js';
 import { openAddDialog } from '../dialogs/add.js';
+import { openCheckDialog } from '../dialogs/check.js';
+import { openEditSource } from '../dialogs/edit-source.js';
 import { dropSourceData } from '../iptv/playlist.js';
 import { allSources, descOf, nameOf } from '../iptv/sources.js';
-import { customSources, getPref, onStoreChange, removeSource, setPref } from '../iptv/store.js';
+import { customSources, getChecks, getPref, onStoreChange, removeSource, setPref } from '../iptv/store.js';
 import { onView, setView } from '../iptv/view-state.js';
 import { ICONS } from '../ui/icons.js';
 import { closeModal, openModal } from '../ui/modal.js';
@@ -37,21 +39,41 @@ function confirmRemove(source) {
   openModal(t('cat.confirmRemove', { n: nameOf(source) }), [actions]);
 }
 
+function actionBtn(svg, labelKey, run) {
+  const b = button('row-btn', (e) => {
+    e.stopPropagation();
+    run();
+  });
+  b.append(icon(svg));
+  b.setAttribute('aria-label', t(labelKey));
+  return b;
+}
+
+// Значок результата последней проверки под описанием плейлиста.
+function checkBadge(source) {
+  const c = getChecks()[source.id];
+  if (!c) return null;
+  const when = new Date(c.time).toLocaleDateString();
+  return el('div', `src-status ${c.ok ? 'ok' : 'bad'}`, c.ok ? t('chk.badgeOk', { d: when }) : t('chk.badgeBad', { d: when }));
+}
+
 function createCard(source) {
   const type = findType(source.type);
   const item = el('div', 'src');
   item.style.setProperty('--c', type.color);
   const meta = el('div', 'meta');
   meta.append(el('div', 'fname', nameOf(source)), el('div', 'fsub', descOf(source)));
+  const badge = source.virtual ? null : checkBadge(source);
+  if (badge) meta.append(badge);
   item.append(el('div', 'src-bubble', source.emoji ?? type.emoji), meta);
   if (!source.virtual) {
-    const del = button('row-btn', (e) => {
-      e.stopPropagation();
-      confirmRemove(source);
-    });
-    del.append(icon(ICONS.trash));
-    del.setAttribute('aria-label', t('cat.remove'));
-    item.append(del);
+    const acts = el('div', 'acts');
+    acts.append(
+      actionBtn(ICONS.checkCircle, 'chk.one', () => openCheckDialog([source])),
+      actionBtn(ICONS.edit, 'edit.title', () => openEditSource(source)),
+      actionBtn(ICONS.trash, 'cat.remove', () => confirmRemove(source)),
+    );
+    item.append(acts);
   }
   item.addEventListener('click', () => openSource(source));
   return item;
@@ -85,7 +107,11 @@ export function renderLibrary() {
   );
   const bar = el('div', 'cat-bar');
   const count = el('div', 'muted small');
-  bar.append(count, viewSwitch);
+  const checkBtn = button('btn ghost sm check-btn', () => openCheckDialog(customSources()));
+  checkBtn.append(icon(ICONS.checkCircle, 'btn-ico'), bindText(el('span'), 'chk.button'));
+  const barRight = el('div', 'bar-right');
+  barRight.append(checkBtn, viewSwitch);
+  bar.append(count, barRight);
   const intro = el('div');
   const list = el('div');
   browse.append(top, chips, bar, intro, list);
@@ -127,6 +153,7 @@ export function renderLibrary() {
     drawChips();
     const sources = allSources().filter(matches);
     count.textContent = t('cat.count', { n: customSources().length });
+    checkBtn.hidden = !customSources().length;
     // Пока ничего не загружено — подсказка, с чего начать.
     intro.replaceChildren(...(customSources().length || query ? [] : [createStateBox(ICONS.library, 'lib.empty', 'lib.emptyHint', 'cat.add', openAddDialog)]));
     if (!sources.length) {
@@ -164,7 +191,7 @@ export function renderLibrary() {
   });
 
   draw();
-  onStoreChange((what) => what === 'sources' && draw());
+  onStoreChange((what) => (what === 'sources' || what === 'checks') && draw());
   document.addEventListener('langchange', draw);
   return root;
 }

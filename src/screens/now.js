@@ -1,11 +1,12 @@
 import { el, button, icon, image } from '../core/dom.js';
 import { bindAria, bindText } from '../i18n/bind.js';
 import { t } from '../i18n/i18n.js';
+import { openTvDialog } from '../dialogs/tv.js';
 import { navigate } from '../app/router.js';
 import { cleanName } from '../iptv/parse.js';
 import {
-  castChannel, disconnectTv, errorText, getPlayback, onPlayback, openExternal, openVideo, pickTv,
-  playChannel, setSleep, stopPlayback, togglePlay, zap,
+  castChannel, disconnectTv, errorText, getPlayback, hasTv, onPlayback, openExternal, openVideo,
+  playChannel, setSleep, stopPlayback, togglePlay, tvName, zap,
 } from '../iptv/playback.js';
 import { history, isFavorite, onStoreChange, toggleFavorite } from '../iptv/store.js';
 import { ICONS } from '../ui/icons.js';
@@ -54,7 +55,7 @@ export function renderNow() {
   const videoBtn = act(ICONS.video, 'now.video', () => openVideo());
   const tvBtn = act(ICONS.cast, 'now.tv', () => {
     const { channel } = getPlayback();
-    (channel ? castChannel(channel) : pickTv()).catch(() => toast(t('cast.unavailable')));
+    (channel ? castChannel(channel) : Promise.resolve(openTvDialog())).catch(() => toast(t('cast.unavailable')));
   });
   const extBtn = act(ICONS.external, 'now.external', () => {
     const { channel } = getPlayback();
@@ -117,8 +118,8 @@ export function renderNow() {
     const has = Boolean(S.channel);
     empty.hidden = has;
     [card, controls, actions, sleepBox].forEach((n) => (n.hidden = !has));
-    tvPanel.hidden = !S.cast.connected;
-    tvText.textContent = t('now.onTv', { d: S.cast.device });
+    tvPanel.hidden = !hasTv();
+    tvText.textContent = t('now.onTv', { d: tvName() });
     if (has) {
       const ch = S.channel;
       title.textContent = cleanName(ch.name);
@@ -131,10 +132,15 @@ export function renderNow() {
         logo.append(img);
       } else logo.append(icon(ICONS.tv, 'now-ico'));
       const err = errorText(S.error);
-      status.className = `now-status ${err ? 'bad' : S.playing ? 'live' : ''}`;
-      status.textContent = (err ? `${err} · ${S.error.replace('ERROR_CODE_', '')}` : '') || (S.onTv ? t('now.statusTv', { d: S.cast.device }) : S.loading ? t('now.loading') : S.playing ? t('now.live') : t('now.paused'));
-      play.replaceChildren(icon(S.playing ? ICONS.pause : ICONS.play));
-      play.classList.toggle('on', S.playing);
+      const tvBad = S.onTv && S.tvError;
+      const running = S.onTv ? S.tvPlaying : S.playing;
+      status.className = `now-status ${err || tvBad ? 'bad' : running ? 'live' : ''}`;
+      status.textContent =
+        (tvBad ? t('tv.failedShort') : '') ||
+        (err ? `${err} · ${S.error.replace('ERROR_CODE_', '')}` : '') ||
+        (S.onTv ? t('now.statusTv', { d: tvName() }) : S.loading ? t('now.loading') : S.playing ? t('now.live') : t('now.paused'));
+      play.replaceChildren(icon(running ? ICONS.pause : ICONS.play));
+      play.classList.toggle('on', running);
       favBtn.classList.toggle('on', isFavorite(ch.url));
       favBtn.querySelector('.ico').innerHTML = isFavorite(ch.url) ? ICONS.starFill : ICONS.star;
       videoBtn.hidden = S.onTv;

@@ -95,6 +95,8 @@ export const PAGES = [
     titleKey: 'set.sectionPlayback',
     build: () => [
       createRow('set.preferCast', createSwitch(() => getPref('preferCast'), (v) => setPref('preferCast', v))),
+      createRow('set.castProxy', createSwitch(() => getPref('castProxy'), (v) => setPref('castProxy', v))),
+      createRow('set.dlnaProxy', createSwitch(() => getPref('dlnaProxy'), (v) => setPref('dlnaProxy', v))),
       uaRow(),
     ],
   },

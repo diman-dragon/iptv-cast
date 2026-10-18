@@ -155,10 +155,40 @@
   -webkit-box-orient: vertical;
 }
 
-.lib-items.cards .src .row-btn {
+.lib-items.cards .src .acts {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 6px;
+  right: 6px;
+}
+
+.src-status {
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.src-status.ok {
+  color: #22c55e;
+}
+
+.src-status.bad {
+  color: var(--danger);
+}
+
+.bar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.check-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.check-btn[hidden] {
+  display: none;
 }
 
 .lib-items.list > .item {
