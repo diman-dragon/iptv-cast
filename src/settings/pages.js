@@ -5,6 +5,8 @@ import { kvClear } from '../core/kv.js';
 import { clearHistory, customSources, favorites, getPref, history, onStoreChange, removeAllSources, removeSource, setPref } from '../iptv/store.js';
 import { closeModal, openModal } from '../ui/modal.js';
 import { clearMemory, diagnose, dropSourceData } from '../iptv/playlist.js';
+import { diagnoseTv } from '../iptv/tv-diag.js';
+import { syncTvOptions } from '../iptv/playback.js';
 import { createAboutCard } from '../ui/about-card.js';
 import { createField } from '../ui/field.js';
 import { createLangSwitch } from '../ui/lang-switch.js';
@@ -76,6 +78,13 @@ function dataBlock() {
       diag.textContent = (await diagnose()).join('\n');
     }), 'set.diag'),
   );
+  actions.append(
+    bindText(button('btn ghost', async () => {
+      diag.hidden = false;
+      diag.textContent = t('set.diagRunning');
+      diag.textContent = (await diagnoseTv()).join('\n');
+    }), 'tv.diag'),
+  );
   box.append(bindText(el('h3', 'section-title'), 'set.mySources'), list, stats, actions, diag);
   onStoreChange(draw);
   document.addEventListener('langchange', draw);
@@ -95,8 +104,8 @@ export const PAGES = [
     titleKey: 'set.sectionPlayback',
     build: () => [
       createRow('set.preferCast', createSwitch(() => getPref('preferCast'), (v) => setPref('preferCast', v))),
-      createRow('set.castProxy', createSwitch(() => getPref('castProxy'), (v) => setPref('castProxy', v))),
-      createRow('set.dlnaProxy', createSwitch(() => getPref('dlnaProxy'), (v) => setPref('dlnaProxy', v))),
+      createRow('set.castProxy', createSwitch(() => getPref('castProxy'), (v) => { setPref('castProxy', v); syncTvOptions(); })),
+      createRow('set.dlnaProxy', createSwitch(() => getPref('dlnaProxy'), (v) => { setPref('dlnaProxy', v); syncTvOptions(); })),
       uaRow(),
     ],
   },

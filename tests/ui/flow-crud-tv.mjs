@@ -1,3 +1,4 @@
+import 'fake-indexeddb/auto';
 import { JSDOM } from 'jsdom';
 const dom = new JSDOM('<!doctype html><div id="app"></div>', { url: 'https://localhost/', pretendToBeVisual: true });
 const w = dom.window; w.open = () => {};
@@ -27,35 +28,14 @@ const q = (s) => [...document.querySelectorAll(s)]; const wait = (ms) => new Pro
 const btn = (re, scope = document) => [...scope.querySelectorAll('button')].find((b) => re.test(b.textContent) || re.test(b.getAttribute('aria-label') || ''));
 let fails = 0; const ok = (n, c, i = '') => { console.log((c ? 'PASS ' : 'FAIL ') + n + (c ? '' : '  -> ' + i)); if (!c) fails++; };
 
-// ---------- проверка плейлистов
-store.addSources([{ name: 'Alpha', url: 'https://t.test/a.m3u', type: 'sport' }, { name: 'Beta', url: 'https://t.test/b.m3u', type: 'news' }, { name: 'Gamma', url: 'https://t.test/c.m3u', type: 'movies' }]);
+// ---------- подготовка: один плейлист с результатом проверки
+store.addSources([{ name: 'Alpha', url: 'https://t.test/a.m3u', type: 'sport' }]);
+store.setCheck(store.customSources()[0].id, { total: 5, alive: 4, removed: 1, offline: false });
 await wait(50);
-ok('3 playlists in library', store.customSources().length === 3);
-btn(/^Check$/).click(); await wait(1500);
-ok('modal shows decision with 2 failed', /Valid: 1, not working: 2/.test(q('.chk-summary')[0]?.textContent), q('.chk-summary')[0]?.textContent);
-ok('alive stream found -> Alpha valid (stops early)', probed.some((u) => u.includes('alive')));
-ok('dead playlist reason shown', q('.chk-row .fsub').some((n) => /none of \d+ tested channels responds \(timeout\)/.test(n.textContent)), q('.chk-row .fsub').map((n) => n.textContent));
-ok('unreachable playlist reason shown', q('.chk-row .fsub').some((n) => /Cannot be loaded/.test(n.textContent)));
-ok('library cards got badges', store.getChecks()[store.customSources()[0].id]?.ok === true);
-// Повторить Beta — всё ещё мёртв
-const betaRow = q('.chk-row').find((r) => /Beta/.test(r.textContent));
-btn(/^Retry$/, betaRow).click(); await wait(800);
-ok('retry keeps dead playlist in the list', q('.chk-row').some((r) => /Beta/.test(r.textContent)));
-// Удалить Gamma по одному
-btn(/^Delete$/, q('.chk-row').find((r) => /Gamma/.test(r.textContent))).click(); await wait(100);
-ok('single delete removes Gamma', !store.customSources().some((s) => s.name === 'Gamma') && store.customSources().length === 2);
-// Удалить все нерабочие с подтверждением
-btn(/Delete all not working/).click(); await wait(50);
-ok('mass delete asks for confirmation', /Delete 1 playlists without a stream\?/.test(document.querySelector('.chk-confirm')?.textContent ?? ''), document.querySelector('.chk-confirm')?.textContent);
-btn(/^Yes, delete$/).click(); await wait(150);
-ok('after confirm only Alpha remains', store.customSources().length === 1 && store.customSources()[0].name === 'Alpha', store.customSources().map((s) => s.name));
-ok('modal shows nothing left that fails', /nothing left/.test(q('.chk-summary')[0]?.textContent ?? ''), q('.chk-summary')[0]?.textContent);
-btn(/^Done$/).click();
-
 // ---------- CRUD плейлистов
 const alpha = store.customSources()[0];
 const card = () => q('.src').find((n) => /Alpha|Renamed/.test(n.textContent));
-ok('Alpha card shows valid badge', /valid/.test(card().textContent), card().textContent);
+ok('Alpha card shows check badge', /4 working/.test(card().textContent), card().textContent);
 btn(/^Edit playlist$/, card()).click(); await wait(30);
 const nameInput = q('.modal input')[0]; nameInput.value = 'Renamed'; 
 q('.modal select')[0].value = 'music';
@@ -87,23 +67,46 @@ btn(/^Delete$/, myCard).click(); await wait(30);
 btn(/^Delete$/, q('.modal')[0]).click(); await wait(100);
 ok('delete playlist (confirm) removes it and its data', !store.customSources().some((s) => s.id === mine.id));
 
-// ---------- ТВ: DLNA
-const ch = { name: 'Chan X', url: 'http://x/y.m3u8', group: 'g', logo: '' };
-await castChannel(ch, [ch]); await wait(300);
-ok('no TV selected -> TV dialog opens with DLNA device', q('.tv-row').some((r) => /Living Room TV/.test(r.textContent)), q('.modal').length);
-q('.tv-row').find((r) => /Living Room TV/.test(r.textContent)).click(); await wait(100);
-ok('pending channel goes to the DLNA TV (direct, no proxy)', dlna[0]?.[0] === 'play' && dlna[0][1] === ch.url && dlna[0][2] === false, dlna);
-ok('state: on TV, playing, header shows TV name', getPlayback().onTv && getPlayback().tvPlaying && /Living Room TV/.test(q('.cast-name')[0]?.textContent), q('.cast-name')[0]?.textContent);
+// ---------- ТВ: кнопка только в окне плеера (нативной), в вебе её нигде нет
+const { applyTvStarted, playChannel, syncTvOptions } = await import(root + 'iptv/playback.js');
+ok('no cast button in header', q('.cast-btn').length === 0);
+navigate('library'); await wait(50);
+const adhoc = { name: 'Chan X', url: 'http://x/y.m3u8', group: 'g', logo: '' };
+store.saveLocalChannel('mine-channels', adhoc);
+const { setView } = await import(root + 'iptv/view-state.js');
+setView({ sourceId: 'mine-channels' }); await wait(200);
+ok('channel rows have no "Show on TV" button', !q('.channels .item .row-btn').some((b) => /TV/i.test(b.getAttribute('aria-label') || '')), q('.channels .item .row-btn').map((b) => b.getAttribute('aria-label')));
+setView({ sourceId: null });
+const played = [], opts = [];
+Iptv.play = async (a) => { played.push(a); return {}; };
+Iptv.setTvOptions = async (o) => { opts.push(o); };
+syncTvOptions(); ok('TV options are handed to the native side', opts.length === 1 && opts[0].castProxy === true && opts[0].dlnaProxy === false, opts);
+
+// канал ушёл на ТВ из окна плеера: нативная часть сообщает событием tvStarted
+applyTvStarted({ kind: 'dlna', name: 'Living Room TV', location: 'http://tv/d.xml', controlUrl: 'http://tv/ctl', serviceType: 'urn:x:AVTransport:1', title: 'Chan X', url: adhoc.url, sub: 'g', logo: '' });
+ok('state: on TV, TV playing, phone not playing', getPlayback().onTv && getPlayback().tvPlaying && !getPlayback().playing && getPlayback().dlna?.name === 'Living Room TV');
+navigate('player'); await wait(50);
+ok('player tab: TV panel shows device, no "To TV" button', !q('.tv-panel')[0].hidden && /Living Room TV/.test(q('.tv-text')[0].textContent) && !q('.act').some((b) => /To TV/i.test(b.textContent)), q('.act').map((b) => b.textContent));
 await togglePlay(); ok('pause goes to the TV', dlna.at(-1)[0] === 'pause' && getPlayback().tvPlaying === false, dlna);
 await togglePlay(); ok('resume goes to the TV', dlna.at(-1)[0] === 'play');
+// пока ТВ подключён, нажатие на канал сразу идёт на ТВ, а на телефоне ничего не открывается
+const next = { name: 'Chan Z', url: 'http://x/z.m3u8', group: 'g', logo: '' };
+await playChannel(next, [adhoc, next]); await wait(30);
+ok('tap while TV connected: sent to the TV, nothing played on the phone', dlna.at(-1)[0] === 'play' && dlna.at(-1)[1] === next.url && dlna.at(-1)[2] === false && played.length === 0, [dlna.at(-1), played.length]);
+// ошибка ТВ видна
 Iptv.dlnaPlay = async () => { throw new Error('UPnP SetAVTransportURI: HTTP 701'); };
-await castChannel({ ...ch, url: 'http://x/z.m3u8' }); await wait(50);
+await playChannel({ ...next, url: 'http://x/bad.m3u8' }); await wait(50);
 ok('TV failure shows toast + status', !!q('.toast')[0] && getPlayback().tvError.includes('701'), q('.toast')[0]?.textContent);
-navigate('player'); await wait(50);
-ok('player tab: TV panel + error status', /The TV could not play/.test(q('.now-status')[0]?.textContent) && !q('.tv-panel')[0].hidden, q('.now-status')[0]?.textContent);
-// ключи proxy
+ok('player tab shows TV failure', /The TV could not play/.test(q('.now-status')[0]?.textContent), q('.now-status')[0]?.textContent);
+// канал с особым User-Agent идёт через телефон-прокси
 Iptv.dlnaPlay = async (a) => { dlna.push(['play', a.url, a.proxy]); };
-await castChannel({ ...ch, url: 'http://x/ua.m3u8', ua: 'X' }); await wait(50);
-ok('DLNA with User-Agent goes through the phone proxy', dlna.at(-1)[2] === true, dlna.at(-1));
+await playChannel({ ...next, url: 'http://x/ua.m3u8', ua: 'X' }); await wait(30);
+ok('DLNA stream needing a User-Agent goes through the phone proxy', dlna.at(-1)[2] === true, dlna.at(-1));
+// отключить ТВ → снова воспроизведение на телефоне (окно плеера открывается)
+const { disconnectTv } = await import(root + 'iptv/playback.js');
+await disconnectTv(); await wait(30);
+ok('disconnect: DLNA stop sent, TV forgotten', dlna.at(-1)[0] === 'stop' && getPlayback().dlna === null && getPlayback().onTv === false, dlna.at(-1));
+await playChannel(next, [adhoc, next]); await wait(30);
+ok('after disconnect a tap plays on the phone and opens the video window', played.length === 1 && played[0].video === true && played[0].url === next.url, played);
 console.log(fails ? fails + ' FAILED' : 'ALL PASSED', '| errors:', errs);
 process.exit(fails ? 1 : 0);

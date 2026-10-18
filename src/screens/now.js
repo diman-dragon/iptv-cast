@@ -1,11 +1,10 @@
 import { el, button, icon, image } from '../core/dom.js';
 import { bindAria, bindText } from '../i18n/bind.js';
 import { t } from '../i18n/i18n.js';
-import { openTvDialog } from '../dialogs/tv.js';
 import { navigate } from '../app/router.js';
 import { cleanName } from '../iptv/parse.js';
 import {
-  castChannel, disconnectTv, errorText, getPlayback, hasTv, onPlayback, openExternal, openVideo,
+  disconnectTv, errorText, getPlayback, hasTv, onPlayback, openExternal, openVideo,
   playChannel, setSleep, stopPlayback, togglePlay, tvName, zap,
 } from '../iptv/playback.js';
 import { history, isFavorite, onStoreChange, toggleFavorite } from '../iptv/store.js';
@@ -53,10 +52,6 @@ export function renderNow() {
     return b;
   };
   const videoBtn = act(ICONS.video, 'now.video', () => openVideo());
-  const tvBtn = act(ICONS.cast, 'now.tv', () => {
-    const { channel } = getPlayback();
-    (channel ? castChannel(channel) : Promise.resolve(openTvDialog())).catch(() => toast(t('cast.unavailable')));
-  });
   const extBtn = act(ICONS.external, 'now.external', () => {
     const { channel } = getPlayback();
     if (channel) openExternal(channel).catch(() => toast(t('ch.noApp')));
@@ -65,7 +60,7 @@ export function renderNow() {
     const { channel } = getPlayback();
     if (channel) toast(toggleFavorite(channel) ? t('ch.favAdded') : t('ch.favRemoved'));
   });
-  actions.append(videoBtn, tvBtn, extBtn, favBtn);
+  actions.append(videoBtn, extBtn, favBtn);
 
   const tvPanel = el('div', 'tv-panel');
   const tvText = el('div', 'tv-text');

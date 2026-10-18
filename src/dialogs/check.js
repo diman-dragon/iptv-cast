@@ -1,34 +1,15 @@
 import { el, button } from '../core/dom.js';
 import { bindText } from '../i18n/bind.js';
 import { t } from '../i18n/i18n.js';
-import { checkAll, checkSource } from '../iptv/check.js';
+import { checkPlaylist, undoRemoved } from '../iptv/check.js';
 import { dropSourceData } from '../iptv/playlist.js';
 import { nameOf } from '../iptv/sources.js';
 import { removeSource, setCheck } from '../iptv/store.js';
 import { closeModal, openModal } from '../ui/modal.js';
 import { toast } from '../ui/toast.js';
 
-const REASONS = ['http', 'timeout', 'network', 'ssl', 'html', 'empty', 'format', 'hls', 'segment', 'scheme'];
-
-// Человеческое описание результата проверки.
-export function resultText(r) {
-  const why = REASONS.includes(r.detail) ? t(`pr.${r.detail}`) : r.detail || '?';
-  if (r.kind === 'ok') return t('chk.ok', { n: r.tried });
-  if (r.kind === 'empty') return t('chk.empty');
-  if (r.kind === 'load') return t('chk.load', { d: r.detail });
-  return t('chk.dead', { n: r.tried, d: why });
-}
-
-function createRow(source, r) {
-  const row = el('div', `chk-row ${r.ok ? 'ok' : 'bad'}`);
-  const meta = el('div', 'meta');
-  meta.append(el('div', 'fname', nameOf(source)), el('div', 'fsub wrap', resultText(r)));
-  row.append(el('span', 'chk-mark', r.ok ? '✓' : '✗'), meta);
-  return { row, sub: meta.lastChild };
-}
-
-// Проверка плейлистов: открываем каждый, пробуем потоки. Нерабочие — спрашиваем, что с ними делать.
-export function openCheckDialog(sources) {
+// Проверка всех каналов выбранных плейлистов. Не давшие поток удаляются автоматически; удалённое можно вернуть.
+export function openCheckDialog(sources, { onDone } = {}) {
   const targets = sources.filter((s) => !s.virtual);
   if (!targets.length) return toast(t('chk.nothing'));
   const ctrl = new AbortController();
@@ -38,125 +19,119 @@ export function openCheckDialog(sources) {
     onClose: () => {
       closed = true;
       ctrl.abort();
+      onDone?.();
     },
   });
 
   // ---------- ход проверки
+  const head = el('div', 'chk-summary', t('chk.loading'));
   const fill = el('div', 'progress-fill');
   const bar = el('div', 'progress');
   bar.append(fill);
-  const status = el('div', 'muted small', t('chk.progress', { d: 0, n: targets.length }));
-  const rows = el('div', 'chk-list');
+  const counters = el('div', 'chk-counters');
+  const note = el('div', 'muted small');
+  const lines = el('div', 'chk-list');
   const actions = el('div', 'modal-actions');
   actions.append(bindText(button('btn ghost', () => ctrl.abort()), 'chk.stop'));
-  view.replaceChildren(bar, status, rows, actions);
+  view.replaceChildren(head, bar, counters, note, lines, actions);
 
-  const failed = [];
-  let okCount = 0;
-  checkAll(targets, {
-    signal: ctrl.signal,
-    onResult: (source, r, done) => {
-      setCheck(source.id, r);
-      if (r.ok) okCount++;
-      else failed.push({ source, r });
-      rows.prepend(createRow(source, r).row);
-      fill.style.width = `${Math.round((done / targets.length) * 100)}%`;
-      status.textContent = t('chk.progress', { d: done, n: targets.length });
-    },
-  }).then(() => {
-    if (!closed) finish();
-  });
+  const reports = [];
+  const finishedLine = (r) => {
+    const row = el('div', `chk-row ${r.alive ? 'ok' : 'bad'}`);
+    const meta = el('div', 'meta');
+    const text = r.offline
+      ? t('chk.offline')
+      : t('chk.report', { a: r.alive, t: r.total, d: r.removed.length });
+    meta.append(el('div', 'fname', nameOf(r.source)), el('div', 'fsub wrap', text));
+    row.append(el('span', 'chk-mark', r.offline ? '!' : r.alive ? '✓' : '✗'), meta);
+    return row;
+  };
 
-  // ---------- итог и вопрос «что делать»
-  function finish() {
-    if (!failed.length) {
-      const done = el('div', 'modal-actions');
-      done.append(bindText(button('btn', closeModal), 'chk.done'));
-      view.replaceChildren(el('div', 'chk-summary good', t('chk.allOk', { n: okCount })), done);
-      return;
+  (async () => {
+    for (let i = 0; i < targets.length && !ctrl.signal.aborted; i++) {
+      const source = targets[i];
+      head.textContent = t('chk.playlist', { i: i + 1, n: targets.length, name: nameOf(source) });
+      fill.style.width = '0%';
+      counters.textContent = '';
+      note.textContent = '';
+      let report;
+      try {
+        report = await checkPlaylist(source, {
+          signal: ctrl.signal,
+          onProgress: (p) => {
+            fill.style.width = `${p.total ? Math.round((p.done / p.total) * 100) : 0}%`;
+            counters.textContent = `${t('chk.channels', { d: p.done, t: p.total })} · ${t('chk.stats', { a: p.alive, b: p.dead })}`;
+            note.textContent = p.phase === 2 ? t('chk.phase2', { n: p.retry }) : '';
+          },
+        });
+      } catch {
+        report = { source, total: 0, alive: 0, removed: [], offline: true, aborted: false };
+      }
+      reports.push(report);
+      setCheck(source.id, { total: report.total, alive: report.alive, removed: report.removed.length, offline: report.offline });
+      if (!closed) lines.prepend(finishedLine(report));
     }
-    const summary = el('div', 'chk-summary', t('chk.summary', { ok: okCount, bad: failed.length }));
-    const ask = bindText(el('div', 'muted small'), 'chk.ask');
+    if (!closed) finish();
+  })();
+
+  // ---------- итог
+  function finish() {
+    const total = reports.reduce((n, r) => n + r.total, 0);
+    const alive = reports.reduce((n, r) => n + r.alive, 0);
+    let removed = reports.reduce((n, r) => n + r.removed.length, 0);
+    const offline = reports.some((r) => r.offline);
+    const summary = el('div', `chk-summary${offline ? '' : ' good'}`);
     const list = el('div', 'chk-list');
     const footer = el('div', 'modal-actions');
-    view.replaceChildren(summary, ask, list, footer);
+    view.replaceChildren(summary, list, footer);
 
-    const drawFooter = () => {
-      footer.replaceChildren();
-      if (!failed.length) {
-        summary.textContent = t('chk.allHandled');
-        ask.hidden = true;
-        footer.append(bindText(button('btn', closeModal), 'chk.done'));
-        return;
-      }
-      summary.textContent = t('chk.summary', { ok: okCount, bad: failed.length });
-      footer.append(
-        bindText(button('btn ghost', closeModal), 'chk.keep'),
-        button('btn danger', confirmAll),
-      );
-      footer.lastChild.textContent = t('chk.removeAll', { n: failed.length });
-    };
+    reports.forEach((r) => list.append(finishedLine(r)));
 
-    const removeItem = async (item, row) => {
-      await dropSourceData(item.source.id);
-      removeSource(item.source.id);
-      failed.splice(failed.indexOf(item), 1);
-      row.remove();
-    };
-
-    // Массовое удаление — с подтверждением.
-    const confirmAll = () => {
-      footer.replaceChildren(
-        el('div', 'chk-confirm', t('chk.confirmAll', { n: failed.length })),
-        bindText(button('btn ghost', drawFooter), 'lib.cancel'),
-        bindText(
-          button('btn danger', async () => {
-            const n = failed.length;
-            await Promise.all([...failed].map((item) => removeItem(item, item.row)));
-            toast(t('chk.removed', { n }));
-            drawFooter();
-          }),
-          'chk.yesRemove',
-        ),
-      );
-    };
-
-    failed.forEach((item) => {
-      const { row, sub } = createRow(item.source, item.r);
-      item.row = row;
-      const retry = bindText(
-        button('btn ghost sm', async () => {
-          row.classList.add('busy');
-          sub.textContent = t('chk.checking');
-          const r = await checkSource(item.source);
-          setCheck(item.source.id, r);
-          row.classList.remove('busy');
-          if (r.ok) {
-            okCount++;
-            failed.splice(failed.indexOf(item), 1);
-            row.remove();
-            toast(t('chk.nowOk', { n: nameOf(item.source) }));
-          } else {
-            item.r = r;
-            sub.textContent = resultText(r);
-          }
-          drawFooter();
-        }),
-        'chk.retry',
-      );
+    // Плейлист, в котором не осталось ни одного рабочего канала, — спрашиваем, что с ним делать.
+    const emptied = reports.filter((r) => r.total > 0 && r.alive === 0 && !r.offline);
+    const ask = emptied.length ? el('div', 'chk-ask') : null;
+    emptied.forEach((r) => {
+      const row = el('div', 'chk-row bad');
+      const meta = el('div', 'meta');
+      meta.append(el('div', 'fname', nameOf(r.source)), el('div', 'fsub wrap', t('chk.emptied')));
       const del = bindText(
         button('btn danger sm', async () => {
-          await removeItem(item, row);
+          await dropSourceData(r.source.id);
+          removeSource(r.source.id);
+          row.remove();
           toast(t('cat.removed'));
-          drawFooter();
         }),
-        'cat.remove',
+        'chk.removeList',
       );
+      const keep = bindText(button('btn ghost sm', () => row.remove()), 'chk.keep');
       const acts = el('div', 'chk-acts');
-      acts.append(retry, del);
-      row.append(acts);
-      list.append(row);
+      acts.append(del, keep);
+      row.append(el('span', 'chk-mark', '✗'), meta, acts);
+      ask.append(row);
     });
-    drawFooter();
+    if (ask) view.insertBefore(ask, footer);
+
+    const text = () =>
+      (offline ? `${t('chk.offline')} ` : '') +
+      t('chk.summaryAll', { t: total, a: alive, d: removed }) +
+      (ctrl.signal.aborted ? ` ${t('chk.aborted')}` : '');
+    summary.textContent = text();
+
+    const undo = bindText(
+      button('btn ghost', async () => {
+        undo.disabled = true;
+        const n = removed;
+        await Promise.all(reports.map(undoRemoved));
+        reports.forEach((r) => (r.removed = []));
+        removed = 0;
+        reports.forEach((r) => setCheck(r.source.id, { total: r.total, alive: r.alive, removed: 0, offline: r.offline }));
+        summary.textContent = text();
+        undo.hidden = true;
+        toast(t('chk.undone', { n }));
+      }),
+      'chk.undo',
+    );
+    undo.hidden = !removed;
+    footer.append(undo, bindText(button('btn', closeModal), 'chk.done'));
   }
 }

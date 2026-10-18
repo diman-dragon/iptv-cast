@@ -159,11 +159,15 @@ final class Prober {
     long deadline = System.currentTimeMillis() + Math.max(2000, timeoutMs);
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     byte[] buf = new byte[8192];
+    int first = -1;
     try {
       while (out.size() < max && System.currentTimeMillis() < deadline) {
         int n = in.read(buf, 0, Math.min(buf.length, max - out.size()));
         if (n < 0) break;
+        if (first < 0 && n > 0) first = buf[0] & 0xFF;
         out.write(buf, 0, n);
+        // Media needs only the first bytes; a playlist ("#EXTM3U") or markup is read on to the end.
+        if (out.size() >= 4096 && first != '#' && first != '<' && first != 0xEF) break;
       }
     } catch (SocketTimeoutException e) {
       if (out.size() == 0) throw e; // nothing came at all

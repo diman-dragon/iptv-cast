@@ -98,15 +98,49 @@ function remember(id, value) {
   while (mem.size > MEM_MAX) mem.delete(mem.keys().next().value);
 }
 
-// Каналы источника. force — игнорировать кэш. Возвращает { channels, time, cached }.
+// Нерабочие каналы чужих плейлистов не стираются из самого списка (он обновляется с сервера),
+// а запоминаются и скрываются: так они не возвращаются после обновления. Вернуть их можно.
+export async function getRemoved(id) {
+  return new Set((await kvGet(`rm:${id}`)) ?? []);
+}
+
+export async function addRemoved(id, urls) {
+  const set = await getRemoved(id);
+  urls.forEach((u) => set.add(u));
+  await kvSet(`rm:${id}`, [...set]);
+}
+
+// urls не задан — вернуть все скрытые.
+export async function clearRemoved(id, urls) {
+  if (!urls) return kvDel(`rm:${id}`);
+  const set = await getRemoved(id);
+  urls.forEach((u) => set.delete(u));
+  return set.size ? kvSet(`rm:${id}`, [...set]) : kvDel(`rm:${id}`);
+}
+
+// Каналы, которые уже проверены и работали (url -> время), чтобы повторная проверка не начиналась с нуля.
+export async function getVerified(id) {
+  return (await kvGet(`ck:${id}`)) ?? {};
+}
+
+export const setVerified = (id, map) => kvSet(`ck:${id}`, map);
+
+// Каналы источника. force — игнорировать кэш. Возвращает { channels, time, cached, removed }.
 export async function loadSource(source, { force = false } = {}) {
   // Виртуальные источники читаются из хранилища на лету и не кэшируются.
   const live = { [FAV_ID]: favorites, [HISTORY_ID]: history }[source.id];
-  if (live) return { channels: live(), time: Date.now(), cached: true };
-  if (source.local || source.id === MINE_ID) return { channels: localChannels(source.id), time: Date.now(), cached: true };
+  if (live) return { channels: live(), time: Date.now(), cached: true, removed: 0 };
+  if (source.local || source.id === MINE_ID) return { channels: localChannels(source.id), time: Date.now(), cached: true, removed: 0 };
+
+  // Скрытые нерабочие не показываем.
+  const visible = async (value, cached) => {
+    const gone = await getRemoved(source.id);
+    const channels = gone.size ? value.channels.filter((c) => !gone.has(c.url)) : value.channels;
+    return { channels, time: value.time, cached, removed: value.channels.length - channels.length };
+  };
 
   const hit = mem.get(source.id);
-  if (hit && !force) return { ...hit, cached: true };
+  if (hit && !force) return visible(hit, true);
 
   let text;
   let time = Date.now();
@@ -135,7 +169,7 @@ export async function loadSource(source, { force = false } = {}) {
   if (!channels.length) throw new Error('empty');
   const value = { channels, time };
   remember(source.id, value);
-  return { ...value, cached };
+  return visible(value, cached);
 }
 
 // Для «Загрузить»: ссылка может вести и на плейлист (M3U), и на файл подборки (JSON).
@@ -148,7 +182,7 @@ export const saveFileSource = (id, text) => kvSet(`file:${id}`, text);
 
 export async function dropSourceData(id) {
   mem.delete(id);
-  await Promise.all([kvDel(`pl:${id}`), kvDel(`file:${id}`)]);
+  await Promise.all([kvDel(`pl:${id}`), kvDel(`file:${id}`), kvDel(`rm:${id}`), kvDel(`ck:${id}`)]);
 }
 
 export const clearMemory = () => mem.clear();

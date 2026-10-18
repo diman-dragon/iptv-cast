@@ -16,4 +16,10 @@
     <string name="player_quality">Quality</string>
     <string name="player_quality_auto">Auto</string>
     <string name="player_quality_none">This stream has a single quality</string>
+    <string name="player_tv">Show on TV</string>
+    <string name="tv_title">Show on TV</string>
+    <string name="tv_chromecast">Chromecast / Google TV</string>
+    <string name="tv_dlna">DLNA TVs on the network</string>
+    <string name="tv_none">None found. The phone and the TV must be on the same Wi-Fi; enable DLNA / media server on the TV.</string>
+    <string name="tv_unavailable">Casting is not available right now</string>
 </resources>

@@ -49,12 +49,12 @@ function actionBtn(svg, labelKey, run) {
   return b;
 }
 
-// Значок результата последней проверки под описанием плейлиста.
+// Итог последней проверки каналов под описанием плейлиста.
 function checkBadge(source) {
   const c = getChecks()[source.id];
-  if (!c) return null;
+  if (!c || c.offline) return null;
   const when = new Date(c.time).toLocaleDateString();
-  return el('div', `src-status ${c.ok ? 'ok' : 'bad'}`, c.ok ? t('chk.badgeOk', { d: when }) : t('chk.badgeBad', { d: when }));
+  return el('div', `src-status ${c.alive ? 'ok' : 'bad'}`, c.alive ? t('chk.badge', { a: c.alive, d: c.removed, date: when }) : t('chk.badgeNone', { date: when }));
 }
 
 function createCard(source) {

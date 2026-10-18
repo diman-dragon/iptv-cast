@@ -120,6 +120,19 @@ export function saveLocalChannel(id, channel, oldUrl) {
   changed('channels');
 }
 
+// Удалить сразу несколько (одна запись и одно обновление экрана) и вернуть назад.
+export function deleteLocalChannels(id, urls) {
+  const drop = new Set(urls);
+  writeJson(localKey(id), localChannels(id).filter((c) => !drop.has(c.url)));
+  changed('channels');
+}
+
+export function restoreLocalChannels(id, channels) {
+  const have = new Set(localChannels(id).map((c) => c.url));
+  writeJson(localKey(id), [...localChannels(id), ...channels.filter((c) => !have.has(c.url))]);
+  changed('channels');
+}
+
 export function deleteLocalChannel(id, url) {
   writeJson(localKey(id), localChannels(id).filter((c) => c.url !== url));
   changed('channels');

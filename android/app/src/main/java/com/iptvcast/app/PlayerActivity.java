@@ -39,6 +39,7 @@ import androidx.media3.common.Tracks;
 import androidx.media3.datasource.HttpDataSource;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +50,14 @@ import java.util.TreeSet;
  * previous / next channel, and a readable reason when a stream does not play.
  */
 public class PlayerActivity extends AppCompatActivity {
+  private static WeakReference<PlayerActivity> current = new WeakReference<>(null);
+
+  /** Closes the video window if it is open (the channel went to the TV, so the phone goes dark). */
+  static void closeIfOpen() {
+    PlayerActivity a = current.get();
+    if (a != null) a.finish();
+  }
+
   private PlayerView view;
   private LinearLayout topBar;
   private LinearLayout errorBox;
@@ -114,6 +123,7 @@ public class PlayerActivity extends AppCompatActivity {
   @Override
   protected void onCreate(Bundle b) {
     super.onCreate(b);
+    current = new WeakReference<>(this);
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
     FrameLayout root = new FrameLayout(this);
@@ -155,8 +165,10 @@ public class PlayerActivity extends AppCompatActivity {
     titleView.setPadding(dp(4), 0, dp(8), 0);
     prevBtn = iconButton(R.drawable.ic_prev, R.string.player_prev, v -> zap(-1));
     nextBtn = iconButton(R.drawable.ic_next, R.string.player_next, v -> zap(1));
+    ImageButton tvBtn = iconButton(R.drawable.ic_cast, R.string.player_tv, v -> TvPicker.show(this));
     topBar.addView(close);
     topBar.addView(titleView, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+    topBar.addView(tvBtn);
     topBar.addView(prevBtn);
     topBar.addView(nextBtn);
     root.addView(
@@ -353,6 +365,12 @@ public class PlayerActivity extends AppCompatActivity {
     errorText.setText(explain(e) + "\n\n" + e.getErrorCodeName());
     errorBox.setVisibility(View.VISIBLE);
     view.showController();
+  }
+
+  @Override
+  protected void onDestroy() {
+    if (current.get() == this) current = new WeakReference<>(null);
+    super.onDestroy();
   }
 
   @Override

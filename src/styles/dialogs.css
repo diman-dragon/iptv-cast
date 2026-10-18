@@ -146,3 +146,25 @@
   flex-basis: 100%;
   font-weight: 600;
 }
+
+.chk-counters {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.chk-ask {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hidden-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hidden-bar[hidden] {
+  display: none;
+}

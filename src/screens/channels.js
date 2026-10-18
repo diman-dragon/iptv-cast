@@ -2,8 +2,9 @@ import { el, button, icon, image } from '../core/dom.js';
 import { bindAria } from '../i18n/bind.js';
 import { t } from '../i18n/i18n.js';
 import { cleanName, tagsOf } from '../iptv/parse.js';
-import { castChannel, getPlayback, onPlayback, playChannel } from '../iptv/playback.js';
-import { loadSource } from '../iptv/playlist.js';
+import { getPlayback, onPlayback, playChannel } from '../iptv/playback.js';
+import { clearRemoved, loadSource } from '../iptv/playlist.js';
+import { openCheckDialog } from '../dialogs/check.js';
 import { FAV_ID, HISTORY_ID, findSource, nameOf } from '../iptv/sources.js';
 import { deleteLocalChannel, getPref, isFavorite, onStoreChange, setPref, toggleFavorite } from '../iptv/store.js';
 import { openChannelDialog } from '../dialogs/channel.js';
@@ -49,6 +50,7 @@ export function createChannelsView({ onBack }) {
   let loading = false;
   let failed = false;
   let failText = '';
+  let removedCount = 0; // сколько нерабочих скрыто проверкой
   let seq = 0; // номер последней загрузки: устаревшие ответы отбрасываем
   let grid = null;
   let observer = null;
@@ -60,13 +62,16 @@ export function createChannelsView({ onBack }) {
   const refreshBtn = button('icon-btn', () => load(true));
   refreshBtn.append(icon(ICONS.refresh));
   bindAria(refreshBtn, 'ch.refresh');
+  const checkBtn = button('icon-btn', () => source && openCheckDialog([source], { onDone: () => load() }));
+  checkBtn.append(icon(ICONS.checkCircle));
+  bindAria(checkBtn, 'ch.check');
   const addBtn = button('icon-btn', () => source && openChannelDialog(source.id));
   addBtn.append(icon(ICONS.plus));
   bindAria(addBtn, 'ch.add');
   addBtn.hidden = true;
   const top = el('div', 'ch-top');
   const topActions = el('div', 'acts');
-  topActions.append(addBtn, refreshBtn);
+  topActions.append(addBtn, checkBtn, refreshBtn);
   top.append(backBtn, topActions);
 
   const search = createSearch('ch.search', (text) => {
@@ -84,8 +89,10 @@ export function createChannelsView({ onBack }) {
   const toolsRow = el('div', 'tools-row');
   toolsRow.append(groupBox, viewSwitch);
   const status = el('div', 'muted small');
+  const hiddenBar = el('div', 'hidden-bar');
+  hiddenBar.hidden = true;
   const head = el('div', 'ch-head');
-  head.append(top, search, toolsRow, status);
+  head.append(top, search, toolsRow, status, hiddenBar);
 
   const list = el('div');
   const more = button('btn ghost more-btn', () => drawMore());
@@ -112,13 +119,7 @@ export function createChannelsView({ onBack }) {
       toast(toggleFavorite(ch) ? t('ch.favAdded') : t('ch.favRemoved'));
     });
     bindAria(favBtn, 'ch.addFav');
-    const castBtn = button('row-btn', (e) => {
-      e.stopPropagation();
-      castChannel(ch, filtered).catch(() => toast(t('cast.unavailable')));
-    });
-    castBtn.append(icon(ICONS.cast));
-    bindAria(castBtn, 'ch.cast');
-    acts.append(favBtn, castBtn);
+    acts.append(favBtn);
     if (source?.local) {
       const sid = source.id;
       const edit = button('row-btn', (e) => {
@@ -195,6 +196,16 @@ export function createChannelsView({ onBack }) {
     const q = query.toLowerCase();
     filtered = all.filter((c) => (!group || c.group === group) && (!q || c.name.toLowerCase().includes(q)));
     status.textContent = loading ? t('ch.loading') : all.length ? t('ch.count', { n: filtered.length, total: all.length }) : '';
+    // «Скрыто нерабочих: N · Вернуть»
+    hiddenBar.hidden = loading || !removedCount;
+    if (!hiddenBar.hidden) {
+      const back = button('btn ghost sm', async () => {
+        await clearRemoved(source.id);
+        load();
+      });
+      back.textContent = t('ch.restore');
+      hiddenBar.replaceChildren(el('span', 'muted small', t('ch.hidden', { n: removedCount })), back);
+    }
     drawList();
   }
 
@@ -216,6 +227,8 @@ export function createChannelsView({ onBack }) {
     failed = false;
     backName.textContent = nameOf(source);
     refreshBtn.hidden = Boolean(source.virtual || source.local);
+    checkBtn.hidden = Boolean(source.virtual);
+    removedCount = 0;
     addBtn.hidden = !source.local;
     loading = true;
     all = [];
@@ -224,6 +237,7 @@ export function createChannelsView({ onBack }) {
       const res = await loadSource(source, { force });
       if (mine !== seq) return;
       all = res.channels;
+      removedCount = res.removed ?? 0;
     } catch (e) {
       if (mine !== seq) return;
       failed = true;

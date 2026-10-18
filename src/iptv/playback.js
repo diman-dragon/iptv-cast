@@ -19,8 +19,6 @@ const S = {
   dlna: null, // выбранный DLNA-телевизор: { name, location, controlUrl, serviceType }
   sleepDeadline: 0, // Date.now() момента, когда сработает таймер сна
 };
-let pending = null; // канал, который отправим на ТВ, как только пользователь выберет ТВ
-let tvPicker = async () => {}; // окно выбора ТВ регистрирует интерфейс
 const AROUND = 150; // сколько соседних каналов отдаём нативной очереди
 
 const listeners = new Set();
@@ -28,7 +26,6 @@ export const getPlayback = () => S;
 export const onPlayback = (fn) => listeners.add(fn);
 const emit = () => listeners.forEach((fn) => fn(S));
 
-export const setTvPicker = (fn) => (tvPicker = fn);
 export const hasTv = () => Boolean(S.dlna) || S.cast.connected;
 export const tvName = () => S.dlna?.name || (S.cast.connected ? S.cast.device : '');
 
@@ -54,17 +51,24 @@ function applyState(st) {
   emit();
 }
 
-async function applyCast(info) {
+function applyCast(info) {
   S.cast = { available: Boolean(info.available), connected: Boolean(info.connected), device: info.device || '' };
   if (S.cast.connected) S.dlna = null; // активен один ТВ
-  if (!hasTv()) {
-    S.onTv = false;
-    pending = null;
-  } else if (pending) {
-    const ch = pending;
-    pending = null;
-    await sendToTv(ch);
-  }
+  if (!hasTv()) S.onTv = false;
+  emit();
+}
+
+// Канал ушёл на ТВ (из окна плеера или из списка): на телефоне всё остановлено и окно закрыто.
+export function applyTvStarted(e) {
+  const known = S.list.find((c) => c.url === e.url);
+  S.channel = known ?? { name: e.title || e.url, url: e.url, group: e.sub || '', logo: e.logo || '' };
+  S.dlna = e.kind === 'dlna' ? { name: e.name, location: e.location, controlUrl: e.controlUrl, serviceType: e.serviceType } : null;
+  S.onTv = true;
+  S.tvPlaying = true;
+  S.tvError = '';
+  S.playing = false;
+  S.sleepDeadline = 0;
+  pushHistory(S.channel);
   emit();
 }
 
@@ -75,10 +79,17 @@ function failTv(message) {
   emit();
 }
 
+// Настройки передачи на ТВ нужны и нативной части: кнопка «На ТВ» находится в окне плеера.
+export function syncTvOptions() {
+  Iptv.setTvOptions({ castProxy: getPref('castProxy'), dlnaProxy: getPref('dlnaProxy') });
+}
+
 export async function initPlayback() {
   await Iptv.addListener('state', applyState);
   await Iptv.addListener('cast', applyCast);
   await Iptv.addListener('castError', (e) => failTv(e?.message));
+  await Iptv.addListener('tvStarted', applyTvStarted);
+  syncTvOptions();
   applyState(await Iptv.state());
   applyCast(await Iptv.castState());
 }
@@ -119,6 +130,7 @@ export async function playChannel(ch, list) {
   if (list?.length) S.list = list;
   S.channel = ch;
   pushHistory(ch);
+  // ТВ уже подключён — канал сразу идёт на ТВ, на телефоне ничего не открывается.
   if (hasTv() && getPref('preferCast')) return sendToTv(ch);
   S.onTv = false;
   S.error = '';
@@ -129,31 +141,6 @@ export async function playChannel(ch, list) {
   // video: окно плеера открывается тем же вызовом, без второго обращения к нативной части.
   await Iptv.play({ ...item(ch), queue: all.slice(from, at + AROUND).map(item), index: at - from, video: true });
 }
-
-// Явно «на ТВ»: если ТВ ещё не выбран — откроется окно выбора, а канал уйдёт сам после выбора.
-export async function castChannel(ch, list) {
-  if (list?.length) S.list = list;
-  S.channel = ch;
-  pushHistory(ch);
-  if (hasTv()) return sendToTv(ch);
-  pending = ch;
-  await tvPicker();
-}
-
-// Выбран DLNA-телевизор из окна выбора.
-export async function useDlna(device) {
-  if (S.cast.connected) await Iptv.castStop().catch(() => {});
-  S.dlna = device;
-  S.tvError = '';
-  emit();
-  if (pending) {
-    const ch = pending;
-    pending = null;
-    await sendToTv(ch);
-  }
-}
-
-export const pickChromecast = () => Iptv.castPicker();
 
 export async function disconnectTv() {
   if (S.dlna) {
@@ -198,7 +185,7 @@ export async function zap(step) {
   if (S.onTv) {
     const i = S.list.findIndex((c) => c.url === S.channel?.url);
     const next = S.list[i + step];
-    if (next) await castChannel(next);
+    if (next) await sendToTv(next);
     return Boolean(next);
   }
   const st = await Iptv.zap({ step });

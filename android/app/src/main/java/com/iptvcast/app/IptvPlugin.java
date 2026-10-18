@@ -7,6 +7,8 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.widget.Toast;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.mediarouter.app.MediaRouteChooserDialog;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
@@ -43,7 +45,11 @@ public class IptvPlugin extends Plugin {
   private static final long FADE_MS = 15_000;
 
   private final Handler main = new Handler(Looper.getMainLooper());
-  private final ExecutorService io = Executors.newFixedThreadPool(6); // network work never runs on the main thread
+  private final ExecutorService io = Executors.newFixedThreadPool(24); // network work never runs on the main thread; bulk checks run many probes at once
+  static IptvPlugin instance; // the video window reaches the plugin through this
+  private ChannelQueue.Channel pendingCast; // goes to the TV as soon as the user picks a Chromecast
+  private boolean castProxyOpt = true;
+  private boolean dlnaProxyOpt = false;
   private CastContext cast;
   private RemoteMediaClient.Callback castCallback;
   private RemoteMediaClient castCallbackOwner;
@@ -55,6 +61,7 @@ public class IptvPlugin extends Plugin {
 
   @Override
   public void load() {
+    instance = this;
     try {
       CastContext.getSharedInstance(getContext(), Executors.newSingleThreadExecutor())
           .addOnSuccessListener(
@@ -301,12 +308,12 @@ public class IptvPlugin extends Plugin {
         }
 
         @Override public void onSessionStarting(CastSession s) {}
-        @Override public void onSessionStarted(CastSession s, String id) { changed(); }
-        @Override public void onSessionStartFailed(CastSession s, int e) { changed(); }
+        @Override public void onSessionStarted(CastSession s, String id) { changed(); flushPendingCast(); }
+        @Override public void onSessionStartFailed(CastSession s, int e) { pendingCast = null; changed(); }
         @Override public void onSessionEnding(CastSession s) {}
         @Override public void onSessionEnded(CastSession s, int e) { changed(); }
         @Override public void onSessionResuming(CastSession s, String id) {}
-        @Override public void onSessionResumed(CastSession s, boolean wasSuspended) { changed(); }
+        @Override public void onSessionResumed(CastSession s, boolean wasSuspended) { changed(); flushPendingCast(); }
         @Override public void onSessionResumeFailed(CastSession s, int e) { changed(); }
         @Override public void onSessionSuspended(CastSession s, int reason) { changed(); }
       };
@@ -354,6 +361,14 @@ public class IptvPlugin extends Plugin {
             });
   }
 
+  /** Options from the settings, so that the video window (native) can send to the TV the same way as the web UI. */
+  @PluginMethod
+  public void setTvOptions(PluginCall call) {
+    castProxyOpt = !Boolean.FALSE.equals(call.getBoolean("castProxy", true));
+    dlnaProxyOpt = Boolean.TRUE.equals(call.getBoolean("dlnaProxy", false));
+    call.resolve();
+  }
+
   /**
    * channel: {url, title, logo, ua, ref, proxy}. Sends the stream to the TV. With proxy (default) the TV
    * receives an address on this phone, which adds the CORS headers a Chromecast insists on, sends the
@@ -362,38 +377,43 @@ public class IptvPlugin extends Plugin {
   @PluginMethod
   public void castLoad(PluginCall call) {
     final String stream = call.getString("url");
-    final String name = call.getString("title", "");
-    final String ua = call.getString("ua", "");
-    final String ref = call.getString("ref", "");
-    final boolean proxy = !Boolean.FALSE.equals(call.getBoolean("proxy", true));
     if (stream == null || stream.isEmpty()) {
       call.reject("url required");
       return;
     }
+    ChannelQueue.Channel c =
+        new ChannelQueue.Channel(
+            stream, call.getString("title", ""), "", call.getString("logo", ""), call.getString("ua", ""), call.getString("ref", ""));
+    castSend(c, !Boolean.FALSE.equals(call.getBoolean("proxy", true)), call);
+  }
+
+  /** Loads the channel on the connected Chromecast; then the phone goes quiet. call may be null. */
+  void castSend(final ChannelQueue.Channel c, final boolean proxy, final PluginCall call) {
     io.execute(
         () -> {
           final String address;
           try {
-            address = proxy ? proxied(stream, ua, ref) : stream;
+            address = proxy ? proxied(c.url, c.ua, c.ref) : c.url;
           } catch (IOException e) {
-            call.reject(e.getMessage());
+            tvFailed(call, e.getMessage());
             return;
           }
           main.post(
               () -> {
-                RemoteMediaClient rc = remoteClient();
+                CastSession session = session();
+                RemoteMediaClient rc = session == null ? null : session.getRemoteMediaClient();
                 if (rc == null) {
-                  call.reject("No active Cast session");
+                  tvFailed(call, "No active Cast session");
                   return;
                 }
                 com.google.android.gms.cast.MediaMetadata md =
                     new com.google.android.gms.cast.MediaMetadata(
                         com.google.android.gms.cast.MediaMetadata.MEDIA_TYPE_GENERIC);
-                md.putString(com.google.android.gms.cast.MediaMetadata.KEY_TITLE, name);
+                md.putString(com.google.android.gms.cast.MediaMetadata.KEY_TITLE, c.title);
                 MediaInfo info =
                     new MediaInfo.Builder(address)
                         .setStreamType(MediaInfo.STREAM_TYPE_LIVE)
-                        .setContentType(contentType(stream))
+                        .setContentType(contentType(c.url))
                         .setMetadata(md)
                         .build();
                 watchCast(rc);
@@ -402,11 +422,41 @@ public class IptvPlugin extends Plugin {
                         r -> {
                           if (!r.getStatus().isSuccess()) castFailed("load " + r.getStatus().getStatusCode());
                         });
-                // The phone stops playing: the picture is on the TV now.
-                PlayerHolder.get(getContext()).pause();
-                call.resolve(castInfo());
+                String device = session.getCastDevice() == null ? "" : session.getCastDevice().getFriendlyName();
+                tvStarted("cast", device, null, c);
+                if (call != null) call.resolve(castInfo());
               });
         });
+  }
+
+  /** The phone goes dark: the channel plays on the TV, so stop it here and close the video window. */
+  private void tvStarted(String kind, String name, Dlna.Device d, ChannelQueue.Channel c) {
+    JSObject o = new JSObject();
+    o.put("kind", kind);
+    o.put("name", name);
+    o.put("title", c.title);
+    o.put("url", c.url);
+    o.put("sub", c.sub);
+    o.put("logo", c.logo);
+    if (d != null) {
+      o.put("location", d.location);
+      o.put("controlUrl", d.controlUrl);
+      o.put("serviceType", d.serviceType);
+    }
+    PlayerActivity.closeIfOpen();
+    ExoPlayer p = PlayerHolder.get(getContext());
+    sleepEnd = 0;
+    main.removeCallbacks(sleepTick);
+    p.stop();
+    p.clearMediaItems();
+    ChannelQueue.clear();
+    push(p);
+    notifyListeners("tvStarted", o);
+  }
+
+  private void tvFailed(PluginCall call, String message) {
+    castFailed(message == null ? "error" : message);
+    if (call != null) call.reject(message == null ? "error" : message);
   }
 
   /** The receiver accepted the request but could not play the stream: tell the web UI why. */
@@ -414,6 +464,12 @@ public class IptvPlugin extends Plugin {
     JSObject e = new JSObject();
     e.put("message", message);
     notifyListeners("castError", e);
+  }
+
+  private void flushPendingCast() {
+    ChannelQueue.Channel c = pendingCast;
+    pendingCast = null;
+    if (c != null) castSend(c, castProxyOpt, null);
   }
 
   private void watchCast(RemoteMediaClient rc) {
@@ -439,6 +495,59 @@ public class IptvPlugin extends Plugin {
   private static String proxied(String stream, String ua, String ref) throws IOException {
     if (StreamProxy.localIp() == null) throw new IOException("no local network (Wi-Fi)");
     return StreamProxy.get().urlFor(stream, ua, ref);
+  }
+
+  // ------------------------------------------------------------------ TV picker (called from the video window)
+
+  /** "Chromecast" chosen in the picker: send now if a TV is connected, else open the system list first. */
+  void tvCast(AppCompatActivity host, ChannelQueue.Channel c) {
+    if (cast == null) {
+      Toast.makeText(host, R.string.tv_unavailable, Toast.LENGTH_LONG).show();
+      return;
+    }
+    if (session() != null) {
+      castSend(c, castProxyOpt, null);
+      return;
+    }
+    pendingCast = c;
+    MediaRouteChooserDialog chooser = new MediaRouteChooserDialog(host);
+    chooser.setRouteSelector(cast.getMergedSelector());
+    chooser.show();
+  }
+
+  /** A DLNA TV chosen in the picker. Direct to the TV, unless the stream needs special headers. */
+  void tvDlna(Dlna.Device d, ChannelQueue.Channel c) {
+    dlnaSend(d, c, dlnaProxyOpt || !c.ua.isEmpty() || !c.ref.isEmpty(), null);
+  }
+
+  /** Looks for DLNA TVs in the background and hands the list to the main thread. */
+  void tvScan(final Consumer<List<Dlna.Device>> done) {
+    io.execute(
+        () -> {
+          List<Dlna.Device> found = new ArrayList<>();
+          try {
+            found = scanBlocking(3500);
+          } catch (Exception ignored) {
+            // nothing found
+          }
+          final List<Dlna.Device> result = found;
+          main.post(() -> done.accept(result));
+        });
+  }
+
+  private List<Dlna.Device> scanBlocking(int timeout) throws IOException {
+    WifiManager.MulticastLock lock = null;
+    try {
+      WifiManager wm = (WifiManager) getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+      if (wm != null) {
+        lock = wm.createMulticastLock("iptvcast-ssdp");
+        lock.setReferenceCounted(false);
+        lock.acquire();
+      }
+      return Dlna.discover(timeout);
+    } finally {
+      if (lock != null && lock.isHeld()) lock.release();
+    }
   }
 
   // ------------------------------------------------------------------ stream check
@@ -475,16 +584,9 @@ public class IptvPlugin extends Plugin {
     final int timeout = call.getInt("timeout", 3500);
     io.execute(
         () -> {
-          WifiManager.MulticastLock lock = null;
           try {
-            WifiManager wm = (WifiManager) getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            if (wm != null) {
-              lock = wm.createMulticastLock("iptvcast-ssdp");
-              lock.setReferenceCounted(false);
-              lock.acquire();
-            }
             JSArray devices = new JSArray();
-            for (Dlna.Device d : Dlna.discover(timeout)) {
+            for (Dlna.Device d : scanBlocking(timeout)) {
               JSObject o = new JSObject();
               o.put("name", d.name);
               o.put("location", d.location);
@@ -497,8 +599,6 @@ public class IptvPlugin extends Plugin {
             call.resolve(res);
           } catch (Exception e) {
             call.reject("dlna: " + e.getMessage());
-          } finally {
-            if (lock != null && lock.isHeld()) lock.release();
           }
         });
   }
@@ -519,20 +619,27 @@ public class IptvPlugin extends Plugin {
       call.reject("device and url required");
       return;
     }
-    final String title = call.getString("title", "");
-    final String ua = call.getString("ua", "");
-    final String ref = call.getString("ref", "");
-    final boolean proxy = Boolean.TRUE.equals(call.getBoolean("proxy", false));
+    ChannelQueue.Channel c =
+        new ChannelQueue.Channel(
+            stream, call.getString("title", ""), "", call.getString("logo", ""), call.getString("ua", ""), call.getString("ref", ""));
+    dlnaSend(d, c, Boolean.TRUE.equals(call.getBoolean("proxy", false)), call);
+  }
+
+  /** Sends the channel to a DLNA TV; then the phone goes quiet. call may be null. */
+  void dlnaSend(final Dlna.Device d, final ChannelQueue.Channel c, final boolean proxy, final PluginCall call) {
     io.execute(
         () -> {
           try {
-            String address = proxy ? proxied(stream, ua, ref) : stream;
-            String mime = contentType(stream).equals("application/x-mpegURL") ? "application/vnd.apple.mpegurl" : "video/mpeg";
-            Dlna.play(d, address, title, mime);
-            main.post(() -> PlayerHolder.get(getContext()).pause());
-            call.resolve();
+            String address = proxy ? proxied(c.url, c.ua, c.ref) : c.url;
+            String mime = contentType(c.url).equals("application/x-mpegURL") ? "application/vnd.apple.mpegurl" : "video/mpeg";
+            Dlna.play(d, address, c.title, mime);
+            main.post(
+                () -> {
+                  tvStarted("dlna", d.name, d, c);
+                  if (call != null) call.resolve();
+                });
           } catch (Exception e) {
-            call.reject(String.valueOf(e.getMessage()));
+            tvFailed(call, String.valueOf(e.getMessage()));
           }
         });
   }
