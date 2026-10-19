@@ -2,12 +2,12 @@ import { el, button, icon } from '../core/dom.js';
 import { bindText } from '../i18n/bind.js';
 import { t } from '../i18n/i18n.js';
 import { TYPES, findType } from '../data/types.js';
-import { openAddDialog } from '../dialogs/add.js';
+import { navigate } from '../app/router.js';
 import { openCheckDialog } from '../dialogs/check.js';
 import { openEditSource } from '../dialogs/edit-source.js';
 import { dropSourceData } from '../iptv/playlist.js';
-import { allSources, descOf, nameOf } from '../iptv/sources.js';
-import { customSources, getChecks, getPref, onStoreChange, removeSource, setPref } from '../iptv/store.js';
+import { FAV_ID, HISTORY_ID, MINE_ID, allSources, descOf, nameOf } from '../iptv/sources.js';
+import { customSources, favorites, getChecks, getPref, history, localChannels, onStoreChange, removeSource, setPref } from '../iptv/store.js';
 import { onView, setView } from '../iptv/view-state.js';
 import { ICONS } from '../ui/icons.js';
 import { closeModal, openModal } from '../ui/modal.js';
@@ -18,6 +18,7 @@ import { createViewSwitch } from '../ui/view-switch.js';
 import { createChannelsView } from './channels.js';
 
 const ALL = 'all';
+const GENRES = TYPES.filter((x) => x.id !== 'mine'); // «Мои» вынесены наверх кнопками
 
 const openSource = (source) => setView({ sourceId: source.id });
 
@@ -63,39 +64,57 @@ function createCard(source) {
   item.style.setProperty('--c', type.color);
   const meta = el('div', 'meta');
   meta.append(el('div', 'fname', nameOf(source)), el('div', 'fsub', descOf(source)));
-  const badge = source.virtual ? null : checkBadge(source);
+  const badge = checkBadge(source);
   if (badge) meta.append(badge);
   item.append(el('div', 'src-bubble', source.emoji ?? type.emoji), meta);
-  if (!source.virtual) {
-    const acts = el('div', 'acts');
-    acts.append(
-      actionBtn(ICONS.checkCircle, 'chk.one', () => openCheckDialog([source])),
-      actionBtn(ICONS.edit, 'edit.title', () => openEditSource(source)),
-      actionBtn(ICONS.trash, 'cat.remove', () => confirmRemove(source)),
-    );
-    item.append(acts);
-  }
+  const acts = el('div', 'acts');
+  acts.append(
+    actionBtn(ICONS.checkCircle, 'chk.one', () => openCheckDialog([source])),
+    actionBtn(ICONS.edit, 'edit.title', () => openEditSource(source)),
+    actionBtn(ICONS.trash, 'cat.remove', () => confirmRemove(source)),
+  );
+  item.append(acts);
   item.addEventListener('click', () => openSource(source));
   return item;
 }
 
-// Библиотека: загруженные плейлисты по жанрам → список каналов → окно плеера.
+// Библиотека. Сверху «Мои» кнопками, ниже поиск и проверка каналов, ниже сами плейлисты по жанрам.
 export function renderLibrary() {
   const root = el('section', 'catalog');
   let type = getPref('lastType');
   let query = '';
 
-  // ---------- список плейлистов
   const browse = el('div');
+
+  // ---------- 1. «Мои»: избранное, история, свои каналы
+  const mine = el('div', 'mine-row');
+  const mineCount = { [FAV_ID]: () => favorites().length, [HISTORY_ID]: () => history().length, [MINE_ID]: () => localChannels(MINE_ID).length };
+  const mineBtns = allSources()
+    .filter((s) => s.virtual)
+    .map((s) => {
+      const b = button('mine-btn', () => openSource(s));
+      const count = el('span', 'mine-count');
+      b.append(el('span', 'mine-emoji', s.emoji), el('span', 'mine-name', nameOf(s)), count);
+      mine.append(b);
+      return { s, count, name: b.querySelector('.mine-name') };
+    });
+  const drawMine = () =>
+    mineBtns.forEach(({ s, count, name }) => {
+      count.textContent = String(mineCount[s.id]());
+      name.textContent = nameOf(s);
+    });
+
+  // ---------- 2. поиск и проверка каналов
   const top = el('div', 'cat-top');
   const search = createSearch('cat.search', (text) => {
     query = text.toLowerCase();
     draw();
   });
-  const add = button('btn add-btn', openAddDialog);
-  add.append(icon(ICONS.plus, 'btn-ico'), bindText(el('span'), 'cat.add'));
-  top.append(search, add);
+  const checkBtn = button('btn ghost check-btn', () => openCheckDialog(customSources()));
+  checkBtn.append(icon(ICONS.checkCircle, 'btn-ico'), bindText(el('span'), 'chk.button'));
+  top.append(search, checkBtn);
 
+  // ---------- 3. сама библиотека
   const chips = el('div', 'chips');
   chips.dataset.noswipe = '1';
   const viewSwitch = createViewSwitch(
@@ -107,19 +126,15 @@ export function renderLibrary() {
   );
   const bar = el('div', 'cat-bar');
   const count = el('div', 'muted small');
-  const checkBtn = button('btn ghost sm check-btn', () => openCheckDialog(customSources()));
-  checkBtn.append(icon(ICONS.checkCircle, 'btn-ico'), bindText(el('span'), 'chk.button'));
-  const barRight = el('div', 'bar-right');
-  barRight.append(checkBtn, viewSwitch);
-  bar.append(count, barRight);
+  bar.append(count, viewSwitch);
   const intro = el('div');
   const list = el('div');
-  browse.append(top, chips, bar, intro, list);
+  browse.append(mine, top, chips, bar, intro, list);
 
   // Чипы жанров — только те, в которых что-то есть.
   function drawChips() {
-    const present = new Set(allSources().map((s) => s.type));
-    const items = [{ id: ALL, emoji: '✨', key: 'type.all' }, ...TYPES.filter((x) => present.has(x.id))];
+    const present = new Set(customSources().map((s) => s.type));
+    const items = [{ id: ALL, emoji: '✨', key: 'type.all' }, ...GENRES.filter((x) => present.has(x.id))];
     if (!items.some((x) => x.id === type)) type = ALL;
     chips.replaceChildren(
       ...items.map((x) => {
@@ -135,8 +150,7 @@ export function renderLibrary() {
     chips.querySelector('.on')?.scrollIntoView?.({ inline: 'center', block: 'nearest' });
   }
 
-  const matches = (s) =>
-    (!query || `${nameOf(s)} ${descOf(s)}`.toLowerCase().includes(query)) && (type === ALL || s.type === type);
+  const matches = (s) => (!query || `${nameOf(s)} ${descOf(s)}`.toLowerCase().includes(query)) && (type === ALL || s.type === type);
 
   function section(titleType, sources) {
     const box = el('div', 'cat-section');
@@ -150,19 +164,22 @@ export function renderLibrary() {
   }
 
   function draw() {
+    drawMine();
     drawChips();
-    const sources = allSources().filter(matches);
-    count.textContent = t('cat.count', { n: customSources().length });
-    checkBtn.hidden = !customSources().length;
-    // Пока ничего не загружено — подсказка, с чего начать.
-    intro.replaceChildren(...(customSources().length || query ? [] : [createStateBox(ICONS.library, 'lib.empty', 'lib.emptyHint', 'cat.add', openAddDialog)]));
+    const all = customSources();
+    const sources = all.filter(matches);
+    count.textContent = t('cat.count', { n: all.length });
+    checkBtn.hidden = !all.length;
+    bar.hidden = !all.length;
+    // Пока ничего не загружено — подсказка, где это сделать.
+    intro.replaceChildren(...(all.length ? [] : [createStateBox(ICONS.library, 'lib.empty', 'lib.emptyHint', 'lib.openSettings', () => navigate('settings'))]));
     if (!sources.length) {
-      list.replaceChildren(...(query ? [createStateBox(ICONS.search, 'cat.empty', 'cat.emptyHint')] : []));
+      list.replaceChildren(...(all.length ? [createStateBox(ICONS.search, 'cat.empty', 'cat.emptyHint')] : []));
       return;
     }
     if (type === ALL && !query) {
       list.replaceChildren(
-        ...TYPES.map((x) => [x, sources.filter((s) => s.type === x.id)])
+        ...GENRES.map((x) => [x, sources.filter((s) => s.type === x.id)])
           .filter(([, items]) => items.length)
           .map(([x, items]) => section(x, items)),
       );
@@ -191,7 +208,7 @@ export function renderLibrary() {
   });
 
   draw();
-  onStoreChange((what) => (what === 'sources' || what === 'checks') && draw());
+  onStoreChange((what) => ['sources', 'checks', 'fav', 'history', 'channels'].includes(what) && draw());
   document.addEventListener('langchange', draw);
   return root;
 }

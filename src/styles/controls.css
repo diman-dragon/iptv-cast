@@ -214,3 +214,13 @@
   overflow-wrap: anywhere;
   user-select: text;
 }
+
+.data-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.data-actions .btn {
+  width: 100%;
+}

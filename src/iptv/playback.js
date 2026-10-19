@@ -18,6 +18,8 @@ const S = {
   cast: { available: false, connected: false, device: '' }, // Chromecast
   dlna: null, // выбранный DLNA-телевизор: { name, location, controlUrl, serviceType }
   sleepDeadline: 0, // Date.now() момента, когда сработает таймер сна
+  hasPrev: false, // в очереди плеера есть предыдущий / следующий канал
+  hasNext: false,
 };
 const AROUND = 150; // сколько соседних каналов отдаём нативной очереди
 
@@ -43,6 +45,8 @@ function applyState(st) {
   S.loading = Boolean(st.loading);
   S.error = st.error || '';
   S.sleepDeadline = st.sleepLeft > 0 ? Date.now() + st.sleepLeft * 1000 : 0;
+  S.hasPrev = Boolean(st.hasPrev);
+  S.hasNext = Boolean(st.hasNext);
   // Канал могли переключить кнопками окна плеера — подхватываем то, что играет сейчас.
   if (!S.onTv && st.loaded && st.url && S.channel?.url !== st.url) {
     S.channel = S.list.find((c) => c.url === st.url) ?? { name: st.title, url: st.url, group: st.sub || '', logo: st.logo || '' };
@@ -89,6 +93,7 @@ export async function initPlayback() {
   await Iptv.addListener('cast', applyCast);
   await Iptv.addListener('castError', (e) => failTv(e?.message));
   await Iptv.addListener('tvStarted', applyTvStarted);
+  await Iptv.addListener('tvDisconnect', backToPhone);
   syncTvOptions();
   applyState(await Iptv.state());
   applyCast(await Iptv.castState());
@@ -126,7 +131,7 @@ async function sendToTv(ch) {
 
 // Нажали на канал: открывается окно плеера (видео или причина ошибки).
 // Если ТВ уже выбран и это разрешено — канал сразу уходит на ТВ.
-export async function playChannel(ch, list) {
+export async function playChannel(ch, list, { open = true } = {}) {
   if (list?.length) S.list = list;
   S.channel = ch;
   pushHistory(ch);
@@ -139,7 +144,19 @@ export async function playChannel(ch, list) {
   const at = Math.max(0, all.findIndex((c) => c.url === ch.url));
   const from = Math.max(0, at - AROUND);
   // video: окно плеера открывается тем же вызовом, без второго обращения к нативной части.
-  await Iptv.play({ ...item(ch), queue: all.slice(from, at + AROUND).map(item), index: at - from, video: true });
+  await Iptv.play({ ...item(ch), queue: all.slice(from, at + AROUND).map(item), index: at - from, video: open });
+}
+
+// Окно выбора ТВ (нативное): Chromecast и DLNA. Если ТВ уже выбран — в нём есть «Вернуть на телефон».
+export function openTvPicker() {
+  if (!S.channel) return Promise.resolve();
+  return Iptv.tvPicker({ ...item(S.channel), sub: S.channel.group || '', active: hasTv() });
+}
+
+// «Вернуть на телефон»: отключить ТВ и продолжить этот же канал здесь.
+async function backToPhone() {
+  await disconnectTv();
+  if (S.channel) await playChannel(S.channel, undefined, { open: false });
 }
 
 export async function disconnectTv() {
@@ -153,22 +170,22 @@ export async function disconnectTv() {
   return Iptv.castStop();
 }
 
-export async function togglePlay() {
+// «Пуск / стоп»: идёт — остановить (канал остаётся выбранным), остановлено — запустить заново (эфир, без «хвоста»).
+export async function startStop() {
   if (S.onTv && hasTv()) {
-    const action = S.tvPlaying ? 'pause' : 'play';
-    S.tvPlaying = !S.tvPlaying;
-    emit();
+    if (!S.tvPlaying) return sendToTv(S.channel);
     try {
-      return S.dlna ? await Iptv.dlnaControl({ ...S.dlna, action }) : await Iptv.castControl({ action });
+      if (S.dlna) await Iptv.dlnaControl({ ...S.dlna, action: 'stop' });
+      else await Iptv.castControl({ action: 'pause' });
+      S.tvPlaying = false;
+      emit();
     } catch (e) {
-      return failTv(String(e?.message ?? e));
+      failTv(String(e?.message ?? e));
     }
+    return;
   }
-  if (S.playing) return Iptv.pause();
-  if (S.channel && !S.loading) {
-    const st = await Iptv.state();
-    return st.loaded ? Iptv.resume() : playChannel(S.channel);
-  }
+  if (S.playing || S.loading) return stopPlayback();
+  if (S.channel) return playChannel(S.channel, undefined, { open: false });
 }
 
 export async function stopPlayback() {
@@ -180,17 +197,32 @@ export async function stopPlayback() {
   emit();
 }
 
+// Соседний канал в списке, из которого выбран текущий.
+const neighbor = (step) => S.list[S.list.findIndex((c) => c.url === S.channel?.url) + step];
+
+// Есть ли куда переключаться (для доступности кнопок).
+export function canZap(step) {
+  if (S.onTv || !(S.playing || S.loading)) return Boolean(S.channel && neighbor(step));
+  return step < 0 ? S.hasPrev : S.hasNext;
+}
+
 // Переключение по списку: step = +1 следующий, -1 предыдущий. true — переключили.
 export async function zap(step) {
   if (S.onTv) {
-    const i = S.list.findIndex((c) => c.url === S.channel?.url);
-    const next = S.list[i + step];
+    const next = neighbor(step);
     if (next) await sendToTv(next);
     return Boolean(next);
   }
-  const st = await Iptv.zap({ step });
-  applyState(st);
-  return st.moved !== false;
+  if (S.playing || S.loading) {
+    const st = await Iptv.zap({ step });
+    applyState(st);
+    return st.moved !== false;
+  }
+  // Остановлено: просто запускаем соседний канал в окне вкладки.
+  const next = neighbor(step);
+  if (!next) return false;
+  await playChannel(next, undefined, { open: false });
+  return true;
 }
 
 export async function setSleep(minutes) {

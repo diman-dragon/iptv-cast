@@ -119,7 +119,8 @@ export function openAddDialog() {
           group: group.input.value.trim() || t('add.myGroup'),
         });
         closeModal();
-        return toast(t('add.channelDone'));
+        toast(t('add.channelDone'));
+        return navigate('library');
       }
       if (mode === 'new') {
         const created = addSource({ name: name.input.value.trim() || t('add.unnamedList'), type: typeSelect.value, local: true });

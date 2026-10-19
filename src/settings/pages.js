@@ -1,15 +1,15 @@
 import { el, button } from '../core/dom.js';
 import { bindText } from '../i18n/bind.js';
 import { t } from '../i18n/i18n.js';
-import { kvClear } from '../core/kv.js';
-import { clearHistory, customSources, favorites, getPref, history, onStoreChange, removeAllSources, removeSource, setPref } from '../iptv/store.js';
-import { closeModal, openModal } from '../ui/modal.js';
-import { clearMemory, diagnose, dropSourceData } from '../iptv/playlist.js';
-import { diagnoseTv } from '../iptv/tv-diag.js';
+import { openAddDialog } from '../dialogs/add.js';
+import { clearHistory, customSources, getPref, removeAllSources, setPref } from '../iptv/store.js';
+import { diagnose, dropSourceData } from '../iptv/playlist.js';
 import { syncTvOptions } from '../iptv/playback.js';
+import { diagnoseTv } from '../iptv/tv-diag.js';
 import { createAboutCard } from '../ui/about-card.js';
 import { createField } from '../ui/field.js';
 import { createLangSwitch } from '../ui/lang-switch.js';
+import { closeModal, openModal } from '../ui/modal.js';
 import { createRow } from '../ui/setting-row.js';
 import { createSwitch } from '../ui/switch.js';
 import { createThemeSwitch } from '../ui/theme-switch.js';
@@ -21,74 +21,48 @@ function uaRow() {
   return field.node;
 }
 
+// Данные: загрузка плейлистов, очистка истории, удаление плейлистов, проверка подключения и диагностика ТВ.
 function dataBlock() {
   const box = el('div', 'data-block');
-  const stats = el('div', 'muted small');
-  const list = el('div', 'my-list');
-  const draw = () => {
-    stats.textContent = t('set.stats', { s: customSources().length, f: favorites().length, h: history().length });
-    list.replaceChildren(
-      ...customSources().map((s) => {
-        const row = el('div', 'row');
-        const name = el('span', 'my-name', s.name);
-        const del = bindText(button('btn ghost sm', async () => {
-          await dropSourceData(s.id);
-          removeSource(s.id);
-        }), 'cat.remove');
-        row.append(name, del);
-        return row;
-      }),
-    );
+  const diag = el('pre', 'diag');
+  diag.hidden = true;
+  const run = async (job) => {
+    diag.hidden = false;
+    diag.textContent = t('set.diagRunning');
+    diag.textContent = (await job()).join('\n');
   };
-  const actions = el('div', 'row-actions');
-  actions.append(
-    bindText(button('btn ghost', async () => {
-      clearMemory();
-      await kvClear();
-      toast(t('set.cacheCleared'));
-    }), 'set.clearCache'),
-    bindText(button('btn ghost', () => {
-      clearHistory();
-      toast(t('set.historyCleared'));
-    }), 'set.clearHistory'),
-  );
-  actions.append(
-    bindText(button('btn ghost', () => {
-      const n = customSources().length;
-      if (!n) return toast(t('set.nothingToRemove'));
-      const row = el('div', 'modal-actions');
-      row.append(
-        bindText(button('btn ghost', closeModal), 'lib.cancel'),
-        bindText(button('btn danger', async () => {
+
+  const confirmRemoveAll = () => {
+    const n = customSources().length;
+    if (!n) return toast(t('set.nothingToRemove'));
+    const row = el('div', 'modal-actions');
+    row.append(
+      bindText(button('btn ghost', closeModal), 'lib.cancel'),
+      bindText(
+        button('btn danger', async () => {
           await Promise.all(customSources().map((x) => dropSourceData(x.id)));
           removeAllSources();
           closeModal();
           toast(t('cat.removed'));
-        }), 'set.removeAll'),
-      );
-      openModal(t('set.removeAllConfirm', { n }), [row]);
-    }), 'set.removeAll'),
-  );
-  const diag = el('pre', 'diag');
-  diag.hidden = true;
+        }),
+        'set.removeAll',
+      ),
+    );
+    openModal(t('set.removeAllConfirm', { n }), [row]);
+  };
+
+  const actions = el('div', 'data-actions');
   actions.append(
-    bindText(button('btn ghost', async () => {
-      diag.hidden = false;
-      diag.textContent = t('set.diagRunning');
-      diag.textContent = (await diagnose()).join('\n');
-    }), 'set.diag'),
+    bindText(button('btn', openAddDialog), 'set.loadLists'),
+    bindText(button('btn ghost', () => {
+      clearHistory();
+      toast(t('set.historyCleared'));
+    }), 'set.clearHistory'),
+    bindText(button('btn ghost', confirmRemoveAll), 'set.removeAll'),
+    bindText(button('btn ghost', () => run(diagnose)), 'set.diag'),
+    bindText(button('btn ghost', () => run(diagnoseTv)), 'tv.diag'),
   );
-  actions.append(
-    bindText(button('btn ghost', async () => {
-      diag.hidden = false;
-      diag.textContent = t('set.diagRunning');
-      diag.textContent = (await diagnoseTv()).join('\n');
-    }), 'tv.diag'),
-  );
-  box.append(bindText(el('h3', 'section-title'), 'set.mySources'), list, stats, actions, diag);
-  onStoreChange(draw);
-  document.addEventListener('langchange', draw);
-  draw();
+  box.append(actions, diag);
   return box;
 }
 

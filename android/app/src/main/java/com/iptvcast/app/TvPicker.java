@@ -19,10 +19,15 @@ import androidx.appcompat.app.AppCompatActivity;
 final class TvPicker {
   private TvPicker() {}
 
+  /** From the full-screen window: the channel that is playing now. */
   static void show(final AppCompatActivity host) {
+    show(host, ChannelQueue.current(), false, null);
+  }
+
+  /** active: a TV is connected already, so there is also a "back to the phone" row (onDisconnect). */
+  static void show(final AppCompatActivity host, final ChannelQueue.Channel channel, boolean active, final Runnable onDisconnect) {
     final IptvPlugin plugin = IptvPlugin.instance;
-    final ChannelQueue.Channel channel = ChannelQueue.current();
-    if (plugin == null || channel == null) {
+    if (plugin == null || channel == null || channel.url.isEmpty()) {
       Toast.makeText(host, R.string.tv_unavailable, Toast.LENGTH_LONG).show();
       return;
     }
@@ -40,6 +45,16 @@ final class TvPicker {
             .setNegativeButton(android.R.string.cancel, null)
             .create();
 
+    if (active && onDisconnect != null) {
+      box.addView(
+          row(
+              host,
+              host.getString(R.string.tv_back),
+              v -> {
+                dialog.dismiss();
+                onDisconnect.run();
+              }));
+    }
     box.addView(
         row(
             host,

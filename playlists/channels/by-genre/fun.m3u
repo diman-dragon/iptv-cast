@@ -1,0 +1,282 @@
+#EXTM3U
+#EXTINF:-1 tvg-id="black.ru@SD" tvg-logo="https://i.imgur.com/Q4A6ci4.png" group-title="Русские",.black (576p) [RU]
+http://stream.mcquack.net/263/index.m3u8
+#EXTINF:-1 tvg-id="red.ru@HD" tvg-logo="https://i.imgur.com/GET9Qut.png" group-title="Русские",.red HD (1080p) [RU]
+http://178.134.1.158:8081/red/index.m3u8
+#EXTINF:-1 tvg-id="2x2.ru@SD" tvg-logo="https://i.imgur.com/fhQFLEl.png" group-title="Русские",2x2 (576i) [RU]
+https://bl.rutube.ru/livestream/392b4686b770bae2da6bf5ac4574add5/index.m3u8?e=2068731801&s=tenr-yHXUv1wibfka78s2A&scheme=https
+#EXTINF:-1 tvg-id="312TV.kg@SD" tvg-logo="https://i.ibb.co/S6sZvqk/iLSGi6c.png" group-title="Русские",312 TV (406p) [RU]
+http://176.126.166.43:1935/live/312musik/playlist.m3u8
+#EXTINF:-1 tvg-id="Belarus2.by@HD" tvg-logo="https://i.imgur.com/BpEHpPS.png" group-title="Русские",Belarus-2 HD (1080p) [RU]
+https://ngtrk.dc.beltelecom.by/ngtrk/smil:belarus2.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="Channel8.ru@SD" tvg-logo="https://i.imgur.com/nUSx1jF.png" group-title="Русские",Channel 8 (Russia) (576p) [RU]
+http://45.11.139.43:8555/8kanal/index.m3u8
+#EXTINF:-1 tvg-id="Che.ru@SD" tvg-logo="https://i.imgur.com/ZOcDGpB.png" group-title="Русские",Che! (576p) [RU]
+http://flussonic.linkintel.ru/che/index.m3u8
+#EXTINF:-1 tvg-id="DiscoveryChannel.ru@SD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/2019_Discovery_logo.svg/960px-2019_Discovery_logo.svg.png" group-title="Русские",Discovery Channel (Russia) (1080p) [RU]
+http://stream.mcquack.net/177/index.m3u8
+#EXTINF:-1 tvg-id="ETVPlus.ee@SD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/a/a2/ETV%2B_logo.png" group-title="Русские",ETV+ (720p) [RU]
+https://sb.err.ee/live/etvpluss.m3u8
+#EXTINF:-1 tvg-id="Fox.ru@SD" tvg-logo="https://i.imgur.com/nr1Y67Z.png" group-title="Русские",Fox (Russia) (576p) [RU]
+http://stream.mcquack.net/182/index.m3u8
+#EXTINF:-1 tvg-id="Friday.ru@SD" tvg-logo="https://i.imgur.com/UfmlXxe.png" group-title="Русские",Friday! (576p) [RU]
+http://stream.mcquack.net/181/index.m3u8
+#EXTINF:-1 tvg-id="FridayInternational.ru@Kazakhstan" tvg-logo="https://i.imgur.com/N2z3EZC.png" group-title="Русские",Friday! International Kazakhstan (576p) [RU]
+https://fs.uplink.kz/bolshaya_pyatnica/mono.m3u8?token=onlinetv
+#EXTINF:-1 tvg-id="Gagsnetwork.us@SD" tvg-logo="https://i.imgur.com/ENj5GIp.png" group-title="Русские",Gagsnetwork (576p) [RU]
+http://hls127.freeott.top:8080/Gagsnetwork/video.m3u8
+#EXTINF:-1 tvg-id="India.ru@SD" tvg-logo="https://i.imgur.com/xDVcDOc.png" group-title="Русские",India (576p) [RU]
+https://fs.uplink.kz/india/mono.m3u8?token=onlinetv
+#EXTINF:-1 tvg-id="Kinokomedija.ru@SD" tvg-logo="https://i.imgur.com/dVjtth0.png" group-title="Русские",Kinokomedija (576p) [RU]
+http://stream.mcquack.net/265/index.m3u8
+#EXTINF:-1 tvg-id="Kluch.ru@SD" tvg-logo="https://i.imgur.com/WA9TOPi.png" group-title="Русские",Kluch (576p) [RU]
+http://hls127.freeott.top:8080/Kluch/video.m3u8
+#EXTINF:-1 tvg-id="Komedia.ru@SD" tvg-logo="https://i.imgur.com/VRC5juh.png" group-title="Русские",Komedia (576p) [RU]
+http://stream.mcquack.net/68/index.m3u8
+#EXTINF:-1 tvg-id="Komediynoe.ru@HD" tvg-logo="https://i.imgur.com/cEKe8XC.png" group-title="Русские",Komediynoe HD (1080p) [RU]
+http://stream.mcquack.net/74/index.m3u8
+#EXTINF:-1 tvg-id="KvartalTV.ua@SD" tvg-logo="https://i.imgur.com/6ZYWizP.png" http-user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" group-title="Русские",Kvartal TV [RU]
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36
+http://158.101.222.193:88/georgia_play.php?id=kvartal95
+#EXTINF:-1 tvg-id="KVNTV.ru@SD" tvg-logo="https://i.imgur.com/Vw3LFLX.png" group-title="Русские",KVN TV (576p) [RU]
+http://178.124.179.122:8080/KVN-TV/index.m3u8
+#EXTINF:-1 tvg-id="Leomax24.ru@SD" tvg-logo="https://i.imgur.com/qU9ohQu.png" group-title="Русские",Leomax 24 (1080p) [RU]
+https://tvshops.bonus-tv.ru/cdn/shop24/playlist.m3u8
+#EXTINF:-1 tvg-id="Magnat.ru@SD" tvg-logo="https://i.imgur.com/r485aZL.png" group-title="Русские",Magnat (1080p) [RU]
+https://s1.tv-nano.com/Magnat_HD_5119705/video.m3u8
+#EXTINF:-1 tvg-id="MakonTV.uz@SD" tvg-logo="https://i.imgur.com/vCc0ED1.png" group-title="Русские",Makon TV (576i) [RU]
+https://stream8.cinerama.uz/1497/tracks-v1a1/mono.m3u8
+#EXTINF:-1 tvg-id="Moymir.ru@SD" tvg-logo="https://www.cableman.ru/sites/default/files/MM-TV_logo-1%5B1509%5D.png" group-title="Русские",Moy mir (720p) [RU]
+https://moymir.ru/hls/onair.m3u8
+#EXTINF:-1 tvg-id="NovyiChannel.ua@SD" tvg-logo="https://i.imgur.com/Dnfhdsm.png" http-user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36" group-title="Русские",Novyi Channel (1080p) [RU]
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+http://stream.mcquack.net/157/index.m3u8
+#EXTINF:-1 tvg-id="OTV.ee@SD" tvg-logo="https://web02.antik.sk/assets/img/channels/5c4e6aadc3255df82fedf3221570cdb5.svg" group-title="Русские",OTV (Estonia) [RU]
+http://88.212.15.17/live/otv/playlist.m3u8
+#EXTINF:-1 tvg-id="OTVPrim.ru@SD" tvg-logo="https://i.imgur.com/2zd8trG.png" group-title="Русские",OTV-Prim [RU]
+https://jz2lo90hnpy.a.trbcdn.net/livemaster/yo8gr_live-5gorrrfpouq.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="PeretzInternational.ru@SD" tvg-logo="https://i.imgur.com/On6ggLe.png" group-title="Русские",Peretz International (576p) [RU]
+http://stream.mcquack.net/121/index.m3u8
+#EXTINF:-1 tvg-id="Poehali.ru@SD" tvg-logo="https://i.imgur.com/ZNCpbII.png" group-title="Русские",Poehali! (1080p) [RU]
+http://31.148.48.15/Poehali/index.m3u8
+#EXTINF:-1 tvg-id="QonaevMedia.kz@SD" tvg-logo="https://i.imgur.com/JLlqgdp.png" group-title="Русские",Qonaev Media [RU]
+https://s.qonaevtv.kz/live/qonaev/playlist.m3u8
+#EXTINF:-1 tvg-id="QuizTV.ua@SD" tvg-logo="https://i.imgur.com/I0ZE0M4.png" http-user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" group-title="Русские",Quiz TV (1080p) [RU]
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+http://stream.mcquack.net/397/index.m3u8
+#EXTINF:-1 tvg-id="RAZ1.ua@SD" tvg-logo="https://s2.vcdn.biz/static/f/7607683721/image.jpg/pt/c192x192x4" group-title="Русские",RAZ 1 (1080p) [RU]
+http://stream.mcquack.net/463/index.m3u8
+#EXTINF:-1 tvg-id="RAZ2.ua@SD" tvg-logo="https://s7.vcdn.biz/static/f/7607698621/image.jpg/pt/c192x192x4" group-title="Русские",RAZ 2 (1080p) [RU]
+http://stream.mcquack.net/464/index.m3u8
+#EXTINF:-1 tvg-id="ShoppingLive.ru@SD" tvg-logo="https://i.imgur.com/EMmGnjV.png" group-title="Русские",Shopping Live (720p) [RU]
+https://nonmirya7cc.a.trbcdn.net/livemaster/tzrz5_sazlypl5ot.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="Smotrim100Prazdnik.ru@SD" tvg-logo="https://i.imgur.com/NEcqFse.png" group-title="Русские",Smotrim 100% Prazdnik (720p) [RU]
+https://stream.smotrim.ru/hls/fasttv04/playlist_3.m3u8
+#EXTINF:-1 tvg-id="Subbota.ru@SD" tvg-logo="https://i.imgur.com/nsk8PpB.png" group-title="Русские",Subbota! (1080p) [RU]
+https://bl.rutube.ru/livestream/310744c10a5809da38aa445c952976da/index.m3u8?e=2066519758&s=dmUf6BUQzDBTwtQOseAfog&scheme=https
+#EXTINF:-1 tvg-id="TNT.ru@HD" tvg-logo="https://i.imgur.com/T4A6rEI.png" group-title="Русские",TNT (Russia) HD (1080p) [RU]
+http://45.153.24.78/TNT/index.m3u8
+#EXTINF:-1 tvg-id="TNTInternational.ru@Belarus" tvg-logo="https://i.imgur.com/l0RGbRI.png" group-title="Русские",TNT International Belarus (1080p) [RU]
+http://05cea6e8.ucomist.net/iptv/VK7YCHHWNDD8XC/15230/index.m3u8
+#EXTINF:-1 tvg-id="TNT4.ru@SD" tvg-logo="https://i.imgur.com/gBokU5i.png" group-title="Русские",TNT4 (576p) [RU]
+http://flussonic.linkintel.ru/tnt4/index.m3u8
+#EXTINF:-1 tvg-id="TNT4International.ru@SD" tvg-logo="https://i.imgur.com/SjdOaya.png" group-title="Русские",TNT4 International (576p) [RU]
+https://fs.uplink.kz/tnt4/mono.m3u8?token=onlinetv
+#EXTINF:-1 tvg-id="TV3.ru@HD" tvg-logo="https://i.imgur.com/JLAvq8O.png" group-title="Русские",TV-3 HD (1080p) [RU]
+http://stream.mcquack.net/136/index.m3u8
+#EXTINF:-1 tvg-id="TvoeTV.ru@SD" tvg-logo="https://i.imgur.com/kKAM7dP.png" group-title="Русские",Tvoe TV (1080p) [RU]
+http://tvoetv.space:8080/tvoetv/index.m3u8
+#EXTINF:-1 tvg-id="TvoyeTVYumor.ru@SD" tvg-logo="https://smotret.tv/images/tvoe-tv-yumor.webp" group-title="Русские",Tvoye TV Yumor (1080p) [RU]
+http://tvoetv.space:8080/tvoetv_humor/index.m3u8
+#EXTINF:-1 tvg-id="U.ru@SD" tvg-logo="https://i.imgur.com/KDZvt0Q.png" group-title="Русские",U (720p) [RU]
+https://bl.rutube.ru/livestream/5c9327074e25ca86f3111d4085cbbb65/index.m3u8?e=2066519758&s=9cPc1rCGu6M932eqrifRhQ&scheme=https
+#EXTINF:-1 tvg-id="vijuPlusComedy.ru@HD" tvg-logo="https://i.imgur.com/YoNOFu7.png" group-title="Русские",viju+ Comedy HD (1080p) [RU]
+http://stream.mcquack.net/201/index.m3u8
+#EXTINF:-1 tvg-id="VitrinaTV.ru@SD" tvg-logo="https://i.imgur.com/lzQsVfn.png" group-title="Русские",Vitrina TV (720p) [RU]
+https://live-11cinema.cdnvideo.ru/11cinema/11cinema/playlist.m3u8
+#EXTINF:-1 tvg-id="VoprosyiOtvety.ru@SD" tvg-logo="https://i.imgur.com/yjETxk1.png" group-title="Русские",Voprosy i Otvety (576p) [RU]
+http://stream.mcquack.net/76/index.m3u8
+#EXTINF:-1 tvg-id="Yuvelirochka.ru@SD" tvg-logo="https://i.imgur.com/IcWtXCZ.png" group-title="Русские",Yuvelirochka (576p) [RU]
+https://live-uvelirochka.cdnvideo.ru/uvelirochka/uvelirochka_720p3/playlist.m3u8
+#EXTINF:-1 tvg-id="30ARidiculousTV.us@SD" tvg-logo="https://30a.media/wp-content/uploads/2023/08/pzaz-30atv-2-230x366-ridiculous.jpg" group-title="Английские",30A Ridiculous TV (720p) [EN]
+https://30a-tv.com/feeds/720p/63.m3u8
+#EXTINF:-1 tvg-id="30ASidewalks.us@SD" tvg-logo="https://i.imgur.com/HSdwqZN.png" group-title="Английские",30A Sidewalks (720p) [EN]
+https://30a-tv.com/sidewalks.m3u8
+#EXTINF:-1 tvg-id="30ATelevisionChannel.us@SD" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTHiYfIB01K44LIBG81aEGAmDuIWw8MA0f2w&s" group-title="Английские",30A Television Channel (720p) [EN]
+https://30a-tv.com/feeds/masters/30atv.m3u8
+#EXTINF:-1 tvg-id="30ATheBeachShow.us@SD" tvg-logo="https://i.imgur.com/0j5Aget.png" group-title="Английские",30A The Beach Show (720p) [EN]
+https://30a-tv.com/beachy.m3u8
+#EXTINF:-1 tvg-id="AE.us@East" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/A%26E_Network_logo.svg/960px-A%26E_Network_logo.svg.png" group-title="Английские",A&E (720p) [EN]
+http://23.239.31.26:8989/aande/index.m3u8
+#EXTINF:-1 tvg-id="ABCTVPlus.au@Sydney" tvg-logo="https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/ABC_TV_Plus_logo_2021.svg/500px-ABC_TV_Plus_logo_2021.svg.png" group-title="Английские",ABC TV Plus (720p) [EN]
+https://c.mjh.nz/abc-tv-plus.m3u8
+#EXTINF:-1 tvg-id="AceTV.us@KCKSLD" tvg-logo="https://i.imgur.com/KtXQeeZ.png" group-title="Английские",Ace TV KCKS-LD (720p) [EN]
+https://2-fss-1.streamhoster.com/pl_154/amlst:205432-2055980/playlist.m3u8
+#EXTINF:-1 tvg-id="AfroLandTV.us@SD" tvg-logo="https://i.imgur.com/jvnkrEF.png" group-title="Английские",AfroLandTV (1080p) [EN]
+https://alt-al.otteravision.com/alt/al/al.m3u8
+#EXTINF:-1 tvg-id="AFV.us@SD" tvg-logo="https://i.imgur.com/TOB9vmW.png" group-title="Английские",AFV (720p) [EN]
+https://linear-12.frequency.stream/dist/plex/12/hls/master/playlist.m3u8
+#EXTINF:-1 tvg-id="ALLBLKGems.us@SD" tvg-logo="https://i.imgur.com/gnkepQJ.png" group-title="Английские",ALLBLK Gems (720p) [EN]
+https://df1zke3zj042m.cloudfront.net/playlist.m3u8
+#EXTINF:-1 tvg-id="AsianCrush.us@SD" tvg-logo="https://i.imgur.com/hW6z1RG.png" group-title="Английские",AsianCrush (1080p) [EN]
+https://linear-900.frequency.stream/dist/cineverse/900/hls/master/playlist.m3u8
+#EXTINF:-1 tvg-id="BarkTV.us@SD" tvg-logo="https://images.squarespace-cdn.com/content/v1/6a233007201fda6808a47ff9/f4f45cba-d340-4963-860a-37edaf91bc7f/BarkTV_Horizontal_Color.png" group-title="Английские",Bark TV (1080p) [EN]
+https://bbb-barkt-streamstak.otteravision.com/bbb/barkt/barkt.m3u8
+#EXTINF:-1 tvg-id="BBCAmerica.us@East" tvg-logo="https://i.imgur.com/pTiiPz0.png" group-title="Английские",BBC America (720p) [EN]
+http://23.239.31.26:8989/bbcamerica/index.m3u8
+#EXTINF:-1 tvg-id="BBCBrit.uk@Poland" tvg-logo="https://i.imgur.com/i4remZo.png" group-title="Английские",BBC Brit (1080p) [EN]
+http://57.128.231.171:8080/309/index.m3u8
+#EXTINF:-1 tvg-id="BondiRescue.us@CA" tvg-logo="https://images.pluto.tv/channels/66166989635c7500084105a2/colorLogoPNG.png" group-title="Английские",Bondi Rescue (United States) (720p) [EN]
+https://jmp2.uk/plu-66166989635c7500084105a2.m3u8
+#EXTINF:-1 tvg-id="BounceXL.us@SD" tvg-logo="https://i.imgur.com/GzxgSkc.png" group-title="Английские",Bounce XL (1080p) [EN]
+https://cdn-uw2-prod.tsv2.amagi.tv/linear/amg01438-ewscrippscompan-bouncexl-tablo/playlist.m3u8
+#EXTINF:-1 tvg-id="Buzzr.us@SD" tvg-logo="https://static.wikia.nocookie.net/logopedia/images/1/12/0mk7F5ao.png/revision/latest/scale-to-width-down/512" group-title="Английские",Buzzr (1080p) [EN]
+http://23.237.104.106:8080/USA_BUZZR/index.m3u8
+#EXTINF:-1 tvg-id="CarChase.us@SD" tvg-logo="https://images.pluto.tv/channels/65244c403fd33c0008ffff31/colorLogoPNG.png" group-title="Английские",Car Chase (United States) (720p) [EN]
+https://jmp2.uk/plu-65244c403fd33c0008ffff31.m3u8
+#EXTINF:-1 tvg-id="ChannelU.sg@SD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Mediacorp_Channel_U_2023.svg/960px-Mediacorp_Channel_U_2023.svg.png" group-title="Английские",Channel U (720p) [EN]
+https://cdn.qd.je/163189/chu
+#EXTINF:-1 tvg-id="ChileChannel.cl@SD" tvg-logo="https://i.imgur.com/F1it6fh.png" group-title="Английские",Chile Channel (720p) [EN]
+https://v2.tustreaming.cl/chilechannel/index.m3u8
+#EXTINF:-1 tvg-id="Circle.us@SD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Circle_Network_logo.svg/960px-Circle_Network_logo.svg.png" group-title="Английские",Circle (1080p) [EN]
+https://circle-roku.amagi.tv/playlist.m3u8
+#EXTINF:-1 tvg-id="ColorsInfinity.in@HD" tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_COLORS_INFINITY/images/LOGO_HD/image.png" group-title="Английские",Colors Infinity HD (1080p) [EN]
+http://103.151.60.162:2122/play/a02r/index.m3u8?hls
+#EXTINF:-1 tvg-id="ComedyCentral.pl@SD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Comedy_Central_2018.svg/960px-Comedy_Central_2018.svg.png" group-title="Английские",Comedy Central (Poland) (1080p) [EN]
+http://57.128.231.171:8080/286/index.m3u8
+#EXTINF:-1 tvg-id="ComedyCentral.se@DK" tvg-logo="https://images.pluto.tv/channels/61c0989431084d0007eab12d/colorLogoPNG.png" group-title="Английские",Comedy Central (Sweden) DK (720p) [EN]
+https://jmp2.uk/plu-61c0989431084d0007eab12d.m3u8
+#EXTINF:-1 tvg-id="ComedyDynamics.us@SD" tvg-logo="https://i.imgur.com/1lEvUOa.png" group-title="Английские",Comedy Dynamics (1080p) [EN]
+https://comedydynamics-plex-ingest.cinedigm.com/playlist.m3u8
+#EXTINF:-1 tvg-id="Comet.us@SD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Comet_logo.svg/960px-Comet_logo.svg.png" group-title="Английские",Comet (1080p) [EN]
+https://fast-channels.sinclairstoryline.com/COMET/index.m3u8
+#EXTINF:-1 tvg-id="CrimePlusInvestigation.us@SD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/4/4d/Crime_%2B_Investigation_Logo_10.2019.svg" group-title="Английские",Crime + Investigation (720p) [EN]
+http://23.237.104.106:8080/USA_CRIME_INVESTIGATION/index.m3u8
+#EXTINF:-1 tvg-id="DiscoveryAsiaTaiwan.tw@SD" tvg-logo="https://i.imgur.com/foLICwL.png" group-title="Английские",Discovery Asia Taiwan (1080p) [EN]
+http://125.227.210.55:1004/VideoInput/play.ts
+#EXTINF:-1 tvg-id="DiscoveryChannelLatinAmerica.us@Panregional" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/2019_Discovery_logo.svg/960px-2019_Discovery_logo.svg.png" group-title="Английские",Discovery Channel Latin America (1080p) [EN]
+http://45.171.64.30:6060/play/a032/index.m3u8
+#EXTINF:-1 tvg-id="DistritoComedia.mx@SD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/DistritoComediaLOGO2018.png/960px-DistritoComediaLOGO2018.png" group-title="Английские",Distrito Comedia (1080p) [EN]
+http://181.119.66.28:8081/DISTRITO-COMEDIA/index.m3u8
+#EXTINF:-1 tvg-id="E.us@East" tvg-logo="https://i.imgur.com/TWFDkap.png" group-title="Английские",E! (United States) East (1080p) [EN]
+http://23.237.104.106:8080/USA_E/index.m3u8
+#EXTINF:-1 tvg-id="EKeepingUp.us@SD" tvg-logo="https://i.imgur.com/9F7VYDM.png" group-title="Английские",E! Keeping Up (1080p) [EN]
+https://xumo-xumoent-vc-117-a3ga4.fast.nbcuni.com/live/master.m3u8
+#EXTINF:-1 tvg-id="FEVATV.ca@SD" tvg-logo="https://i.imgur.com/QSi0YTS.png" http-user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0" group-title="Английские",FEVA TV (1080p) [EN]
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0
+https://d21x3vavxu7p2x.cloudfront.net/v1/master/9d062541f2ff39b5c0f48b743c6411d25f62fc25/DistroTV-MuxIP-FEVATV/416.m3u8?ads.vf=nn5CUAdOxVu
+#EXTINF:-1 tvg-id="Fox.pl@SD" tvg-logo="https://i.imgur.com/hSDN9YQ.png" group-title="Английские",Fox (Poland) (1080p) [EN]
+http://57.128.231.171:8080/249/index.m3u8
+#EXTINF:-1 tvg-id="Fuse.us@East" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/c/c2/Fuse_Black_Logo_2017.png" group-title="Английские",Fuse (1080p) [EN]
+http://23.237.104.106:8080/USA_FUSE/index.m3u8
+#EXTINF:-1 tvg-id="GritXtra.us@SD" tvg-logo="https://provider-static.plex.tv/epg/cms/production/dbbb9bca-0b08-43b5-a0e7-715df9a6dbfd/_ChannelLogo_1500x1000.png" group-title="Английские",Grit Xtra (1080p) [EN]
+https://cdn-uw2-prod.tsv2.amagi.tv/linear/amg01438-ewscrippscompan-gritxtra-tablo/playlist.m3u8
+#EXTINF:-1 tvg-id="GSShop.kr@SD" tvg-logo="https://i.imgur.com/F7QDbEy.png" group-title="Английские",GS Shop (1080p) [EN]
+https://gstv-gsshop.gsshop.com/gsshop_hd/gsshop_hd.stream/playlist.m3u8
+#EXTINF:-1 tvg-id="HiYAH.us@SD" tvg-logo="https://i.imgur.com/sOYAnTB.png" group-title="Английские",Hi-YAH! (1080p) [EN]
+https://linear-59.frequency.stream/dist/plex/59/hls/master/playlist.m3u8
+#EXTINF:-1 tvg-id="HumorMill.us@SD" tvg-logo="https://i.imgur.com/e5W91v2.png" http-user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0" group-title="Английские",Humor Mill (1080p) [EN]
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0
+https://damkf751d85s1.cloudfront.net/v1/master/9d062541f2ff39b5c0f48b743c6411d25f62fc25/HumorMill-DistroTV/152.m3u8?ads.vf=3I7CXmxz7vK
+#EXTINF:-1 tvg-id="IONPlus.us@East" tvg-logo="https://i.imgur.com/1dgCvNE.png" group-title="Английские",ION Plus (1080p) [EN]
+https://cdn-uw2-prod.tsv2.amagi.tv/linear/amg01438-ewscrippscompan-ionplus-tablo/playlist.m3u8
+#EXTINF:-1 tvg-id="Iris.it@HD" tvg-logo="https://i.imgur.com/ZLnSLh4.png" group-title="Английские",Iris HD (1080p) [EN]
+https://live02-seg.msf.cdn.mediaset.net/live/ch-ki/ki-clr.isml/index.m3u8
+#EXTINF:-1 tvg-id="JustforLaughsGags.us@SD" tvg-logo="https://i.imgur.com/HjVEVMJ.png" group-title="Английские",Just for Laughs Gags (1080p) [EN]
+https://streams2.sofast.tv/ptnr-yupptv/title-JUST_FOR_LAUGHS_GAGS_YUPPTV/v1/master/611d79b11b77e2f571934fd80ca1413453772ac7/2790d143-5874-4146-bf91-9063c52b2f15/manifest.m3u8
+#EXTINF:-1 tvg-id="KContentbyCJENM.us@SD" tvg-logo="https://i.imgur.com/lRy231d.png" group-title="Английские",K-Content by CJ ENM (1080p) [EN]
+https://d2q0mzb9bm4w5z.cloudfront.net/68fee8e1_605a_437b_b968_244c3c0d5f24/hls/playlist.m3u8
+#EXTINF:-1 tvg-id="KingsviewTV.ng@SD" tvg-logo="https://i.imgur.com/py1XOXX.png" group-title="Английские",Kingsview TV (1080p) [EN]
+https://j78dp6reyq5r-hls-live.5centscdn.com/4896_push_1963_001/00cb1f2e4ff89048f2e77e26940c00e6.sdp/playlist.m3u8
+#EXTINF:-1 tvg-id="KIX.hk@SD" tvg-logo="https://i.imgur.com/zWcUAdb.png" group-title="Английские",KIX (1080p) [EN]
+https://freem3u.xyz/api/live/play.m3u8?vid=9901
+#EXTINF:-1 tvg-id="LifetimeAsia.us@SD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Logo_Lifetime_2020.svg/960px-Logo_Lifetime_2020.svg.png" group-title="Английские",Lifetime Asia (1080p) [EN]
+http://nmk.ioapk.com:5050/4gtv-live029/index.m3u8
+#EXTINF:-1 tvg-id="LoneStar.us@SD" tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/DISTROTV/LIVECHANNEL/666988e3bac4421ebc533621/images/logo_20231219_215208_70.png" group-title="Английские",Lone Star (1080p) [EN]
+https://lonestar-rakuten.amagi.tv/playlist.m3u8
+#EXTINF:-1 tvg-id="MeritStreet.us@SD" tvg-logo="https://static.wikia.nocookie.net/logopedia/images/1/1d/Merit_Street_Media_2024_1.svg/revision/latest/scale-to-width-down/512" group-title="Английские",Merit Street (1080p) [EN]
+https://d9069ugodwkju.cloudfront.net/Merit_Street.m3u8
+#EXTINF:-1 tvg-id="meWATCHLIVE1.sg@SD" tvg-logo="https://i.imgur.com/ppxUDxB.png" group-title="Английские",meWATCH LIVE 1 (1080p) [EN]
+https://tglmp04.akamaized.net/out/v1/898b1cbac7c747e3b1f3deb460e9b67e/manifest.mpd
+#EXTINF:-1 tvg-id="MidnightPulp.us@SD" tvg-logo="https://provider-static.plex.tv/a/epg/channels/logos/gracenote/a1a2cdc3d6f0714c586e9959732580c7.png" group-title="Английские",Midnight Pulp (1080p) [EN]
+https://linear-897.frequency.stream/dist/cineverse/897/hls/master/playlist.m3u8
+#EXTINF:-1 tvg-id="MTV.us@East" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/MTV_2021_%28brand_version%29.svg/960px-MTV_2021_%28brand_version%29.svg.png" group-title="Английские",MTV (United States) (1080p) [EN]
+http://23.237.104.106:8080/USA_MTV/index.m3u8
+#EXTINF:-1 tvg-id="MysteryScienceTheater3000.us@SD" tvg-logo="https://i.imgur.com/8KWjY4o.png" group-title="Английские",Mystery Science Theater 3000 (1080p) [EN]
+https://d1c73nj8qxp55a.cloudfront.net/Mystery_Science_Theater_3000.m3u8
+#EXTINF:-1 tvg-id="MysteryTV.us@UK" tvg-logo="https://i.imgur.com/K4gwstM.png" group-title="Английские",Mystery TV (1080p) [EN]
+https://aenetworks-mysterytv-rakuten.amagi.tv/playlist.m3u8
+#EXTINF:-1 tvg-id="NBCComedyVault.us@SD" tvg-logo="https://i.imgur.com/nydZWwg.png" group-title="Английские",NBC Comedy Vault (1080p) [EN]
+https://xumo-xumoent-vc-105-z0vpm.fast.nbcuni.com/live/master.m3u8
+#EXTINF:-1 tvg-id="NBCLXHome.us@HD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/7/70/NBC_LX_Home_2023.svg" group-title="Английские",NBC LX Home (1080p) [EN]
+https://plex-xumoent-ch485-e7l5l.fast.nbcuni.com/live/master_5.m3u8
+#EXTINF:-1 tvg-id="NBCLX.us@SD" tvg-logo="https://i.imgur.com/5iT7hEa.png" group-title="Английские",NBCLX (1080p) [EN]
+https://nbculocallive.akamaized.net/hls/live/2037096/lx/use1.m3u8
+#EXTINF:-1 tvg-id="PeopleAreAwesome.us@SD" tvg-logo="https://i.imgur.com/MsIx7Ax.png" group-title="Английские",People Are Awesome (1080p) [EN]
+https://mumbai-edge.smartplaytv.in/PeopleAreAwesome/index.m3u8
+#EXTINF:-1 tvg-id="PlanetFun.uk@SD" tvg-logo="https://i.imgur.com/5U1iKUq.png" group-title="Английские",Planet Fun (1080p) [EN]
+http://66.102.126.10:8000/play/a02k/index.m3u8
+#EXTINF:-1 tvg-id="QVC3.us@SD" tvg-logo="https://i.imgur.com/edswdOO.png" group-title="Английские",QVC3 (1080p) [EN]
+https://qvc-amd-live.akamaized.net/hls/live/2034113/lsqvc3us/master.m3u8
+#EXTINF:-1 tvg-id="Roar.us@SD" tvg-logo="https://iili.io/FxYNwOB.md.png" group-title="Английские",Roar (1080p) [EN]
+https://fast-channels.sinclairstoryline.com/TBD/index.m3u8
+#EXTINF:-1 tvg-id="ShopLC.us@SD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/6/69/ShopHQ_2019_Logo.png" group-title="Английские",Shop LC (1080p) [EN]
+https://cdn-shop-lc-01.akamaized.net/Content/DASH_DASH/Live/channel(ott)/master.mpd
+#EXTINF:-1 tvg-id="SNLVault.us@SD" tvg-logo="https://provider-static.plex.tv/epg/cms/production/712dae9e-9111-4bbc-8ea4-242e891ab5b3/snl-vault-fclogo-72-dpi-1500-x-1000-3-2-channel-logo-dark-plex-1.png" group-title="Английские",SNL Vault (1080p) [EN]
+https://d4whmvwm0rdvi.cloudfront.net/10007/99993017/hls/master.m3u8?ads.xumo_channelId=99993017
+#EXTINF:-1 tvg-id="StarzComedy.us@East" tvg-logo="https://i.imgur.com/JpKvjZe.png" group-title="Английские",Starz Comedy (1080p) [EN]
+http://23.237.104.106:8080/USA_STARZ_COMEDY/index.m3u8
+#EXTINF:-1 tvg-id="TheGrahamNortonShow.uk@SD" tvg-logo="https://image.tmdb.org/t/p/w500/xZkWYamzlT6nFu9MI2Rr6NkjedX.png" group-title="Английские",The Graham Norton Show (1080p) [EN]
+https://amg00654-itv-amg00654c35-rakuten-gb-7598.playouts.now.amagi.tv/playlist.m3u8
+#EXTINF:-1 tvg-id="TJC.uk@SD" tvg-logo="https://i.imgur.com/fk5rEje.png" group-title="Английские",TJC (1080p) [EN]
+https://cdn-shop-lc-01.akamaized.net/Content/HLS_HLS/Live/channel(TJCOTT)/index.m3u8
+#EXTINF:-1 tvg-id="TVSN.au@SD" tvg-logo="https://i.imgur.com/lmoAFm3.png" group-title="Английские",TVSN (1080p) [EN]
+https://tvsnhlslivetest.akamaized.net/hls/live/2034711/TVSN-MSL4/master.m3u8
+#EXTINF:-1 tvg-id="TVSNBeauty.au@SD" tvg-logo="https://i.imgur.com/lmoAFm3.png" group-title="Английские",TVSN Beauty (1080p) [EN]
+https://live-tvsn.simplestreamcdn.com/live12/tvsnbeauty/bitrate1.isml/.m3u8
+#EXTINF:-1 tvg-id="WipeoutXtra.us@SD" tvg-logo="https://i.imgur.com/UDeCRW1.png" group-title="Английские",Wipeout Xtra (1080p) [EN]
+https://amg00627-banijaygroup-wipeoutxtraau-samsungau-ashbl.amagi.tv/playlist/amg00627-banijaygroup-wipeoutxtraau-samsungau/playlist.m3u8
+#EXTINF:-1 tvg-id="XploreTV.us@SD" tvg-logo="https://i.imgur.com/WaGRlFO.png" group-title="Английские",Xplore TV (1080p) [EN]
+https://cdn-uw2-prod.tsv2.amagi.tv/linear/amg00111-hearstmediaprod-xploreintlnl-samsungnl/playlist.m3u8
+#EXTINF:-1 tvg-id="ZeeOne.uk@UK" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/2/24/Zee_One_Logo_2025.png" group-title="Английские",Zee One (1080p) [EN]
+https://amg17931-zee-amg17931c6-samsung-au-8872.playouts.now.amagi.tv/playlist/amg17931-asiatvusaltdfast-zeeworld-samsungau/playlist.m3u8
+#EXTINF:-1 tvg-id="AXNSpin.hu@SD" tvg-logo="https://i.imgur.com/uVFenKm.png" http-referrer="https://cool-tv.net/" http-user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 VLC/3.0.18 LibVLC/3.0.18" group-title="Сербские",AXN Spin (Hungary) [SR]
+#EXTVLCOPT:http-referrer=https://cool-tv.net/
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 VLC/3.0.18 LibVLC/3.0.18
+https://cronos.mangora1.cfd/spyn/usergencs85ja0j1rrnd.m3u8
+#EXTINF:-1 tvg-id="16AnnieIncinta.de@IT" tvg-logo="https://images.pluto.tv/channels/60940a07d88ba90007b9cb71/colorLogoPNG.png" group-title="Итальянские",16 Anni e Incinta [IT]
+https://jmp2.uk/plu-60940a07d88ba90007b9cb71.m3u8
+#EXTINF:-1 tvg-id="7Gold.it@SD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/7gold.jpg/960px-7gold.jpg" group-title="Итальянские",7 Gold (1080p) [IT]
+https://streamcdnr6-dddfac816632463dac50b21109dc1bb3.msvdn.net/live/S58803518/OOZape6Nxp4H/playlist.m3u8
+#EXTINF:-1 tvg-id="Canale5.it@HD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Canale_5_-_2018_logo.svg/960px-Canale_5_-_2018_logo.svg.png" group-title="Итальянские",Canale 5 HD [IT]
+https://live02-seg.msf.cdn.mediaset.net/live/ch-c5/c5-clr.isml/index.m3u8
+#EXTINF:-1 tvg-id="CasaItalia53.it@SD" tvg-logo="https://i.imgur.com/X8BI1Md.png" group-title="Итальянские",Casa Italia 53 (720p) [IT]
+https://ovp-live.akamaized.net/ac115_live/canale3.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="CGEntertainment.it@SD" tvg-logo="https://i.imgur.com/XeWzy7e.png" group-title="Итальянские",CG Entertainment [IT]
+https://cgentertainment-cgtv-1-it.samsung.wurl.tv/playlist.m3u8
+#EXTINF:-1 tvg-id="DiscoveryChannel.it@SD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/2019_Discovery_logo.svg/960px-2019_Discovery_logo.svg.png" group-title="Итальянские",Discovery Channel (Italy) (1080p) [IT]
+https://streaming.aurora.enhanced.live/live/mpc/enl0eG1mLmVncmVzcy5mZDJ2eHI=/out/v1/IT_SIMULCAST/DISCOVERYCHANNEL/CMAF/index.m3u8
+#EXTINF:-1 tvg-id="FailArmy.us@Italy" tvg-logo="https://i.imgur.com/VIpQJxL.png" group-title="Итальянские",FailArmy Italy [IT]
+https://failarmy-international-it.samsung.wurl.tv/playlist.m3u8
+#EXTINF:-1 tvg-id="GeordieShore.de@IT" tvg-logo="https://images.pluto.tv/channels/619263ee9541940007d20d60/colorLogoPNG.png" group-title="Итальянские",Geordie Shore (Germany) [IT]
+https://jmp2.uk/plu-619263ee9541940007d20d60.m3u8
+#EXTINF:-1 tvg-id="GoldTV.it@SD" tvg-logo="https://i.imgur.com/Yzc47k9.png" group-title="Итальянские",Gold TV (576p) [IT]
+https://streaming.softwarecreation.it/GoldTv/GoldTv/playlist.m3u8
+#EXTINF:-1 tvg-id="GoldTVSat.it@SD" tvg-logo="https://i.imgur.com/gQzNIg5.png" group-title="Итальянские",Gold TV Sat (576p) [IT]
+https://streaming.softwarecreation.it/GoldTvSat/GoldTvSat/playlist.m3u8
+#EXTINF:-1 tvg-id="IlBancodeiPugni.us@Italy" tvg-logo="https://i.imgur.com/NZDUlME.png" group-title="Итальянские",Il Banco dei Pugni [IT]
+https://jmp2.uk/plu-60e4507a06171800072339a3.m3u8
+#EXTINF:-1 tvg-id="IlTestimone.de@IT" tvg-logo="https://images.pluto.tv/channels/61fbd3f0733df400076c9a2d/colorLogoPNG.png" group-title="Итальянские",Il Testimone [IT]
+https://jmp2.uk/plu-61fbd3f0733df400076c9a2d.m3u8
+#EXTINF:-1 tvg-id="Iris.it@HD" tvg-logo="https://i.imgur.com/ZLnSLh4.png" group-title="Итальянские",Iris HD (1080p) [IT]
+https://live02-seg.msf.cdn.mediaset.net/live/ch-ki/ki-clr.isml/index.m3u8
+#EXTINF:-1 tvg-id="PassioneLotto.it@SD" tvg-logo="https://i.imgur.com/jYmy4G5.png" group-title="Итальянские",Passione Lotto (300p) [IT]
+http://185.63.52.103:8080/hls/passionelotto/1_2/index.m3u8
+#EXTINF:-1 tvg-id="PlutoTVScherzierisate.de@IT" tvg-logo="https://images.pluto.tv/channels/609404b0a8ec810007d8de9d/colorLogoPNG.png" group-title="Итальянские",Pluto TV Scherzi e risate [IT]
+https://jmp2.uk/plu-609404b0a8ec810007d8de9d.m3u8
+#EXTINF:-1 tvg-id="PlutoTVShore.de@IT" tvg-logo="https://images.pluto.tv/channels/67e3b0d2443f0671bc8a1297/colorLogoPNG_1747721158520.png" group-title="Итальянские",Pluto TV Shore [IT]
+https://jmp2.uk/plu-67e3b0d2443f0671bc8a1297.m3u8
+#EXTINF:-1 tvg-id="QVC.it@SD" tvg-logo="https://i.imgur.com/6TWUVrh.png" group-title="Итальянские",QVC (Italy) (540p) [IT]
+https://qrg.akamaized.net/hls/live/2017383/lsqvc1it/master.m3u8
+#EXTINF:-1 tvg-id="TeenMom.de@IT" tvg-logo="https://images.pluto.tv/channels/62e7fc8c0d061100083946a9/colorLogoPNG.png" group-title="Итальянские",Teen Mom (Germany) [IT]
+https://jmp2.uk/plu-62e7fc8c0d061100083946a9.m3u8

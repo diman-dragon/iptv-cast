@@ -7,6 +7,7 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.mediarouter.app.MediaRouteChooserDialog;
@@ -46,6 +47,7 @@ public class IptvPlugin extends Plugin {
 
   private final Handler main = new Handler(Looper.getMainLooper());
   private final ExecutorService io = Executors.newFixedThreadPool(24); // network work never runs on the main thread; bulk checks run many probes at once
+  private EmbeddedPlayer embedded; // the viewing window of the Player tab
   static IptvPlugin instance; // the video window reaches the plugin through this
   private ChannelQueue.Channel pendingCast; // goes to the TV as soon as the user picks a Chromecast
   private boolean castProxyOpt = true;
@@ -73,6 +75,63 @@ public class IptvPlugin extends Plugin {
     } catch (Throwable ignored) {
       // no Google Play services: everything except Cast keeps working
     }
+  }
+
+  // ------------------------------------------------------------------ viewing window of the Player tab
+
+  /** Shows the native video over the page: {x, y, w, h} in CSS pixels of the web view. */
+  @PluginMethod
+  public void embedShow(PluginCall call) {
+    final double x = call.getDouble("x", 0.0);
+    final double y = call.getDouble("y", 0.0);
+    final double w = call.getDouble("w", 0.0);
+    final double h = call.getDouble("h", 0.0);
+    main.post(
+        () -> {
+          if (w < 2 || h < 2) {
+            if (embedded != null) embedded.hide();
+          } else {
+            if (embedded == null) embedded = new EmbeddedPlayer(getActivity());
+            View web = getBridge().getWebView();
+            embedded.show(web, x, y, w, h);
+          }
+          call.resolve();
+        });
+  }
+
+  @PluginMethod
+  public void embedHide(PluginCall call) {
+    main.post(
+        () -> {
+          if (embedded != null) embedded.hide();
+          call.resolve();
+        });
+  }
+
+  /** Back from the full-screen window: the picture goes back into the page. */
+  @Override
+  protected void handleOnResume() {
+    if (embedded != null) embedded.reattach();
+  }
+
+  /** "Show on TV" from the Player tab: {url, title, sub, logo, ua, ref, active}. */
+  @PluginMethod
+  public void tvPicker(PluginCall call) {
+    final boolean active = Boolean.TRUE.equals(call.getBoolean("active", false));
+    final ChannelQueue.Channel c =
+        new ChannelQueue.Channel(
+            call.getString("url", ""),
+            call.getString("title", ""),
+            call.getString("sub", ""),
+            call.getString("logo", ""),
+            call.getString("ua", ""),
+            call.getString("ref", ""));
+    getActivity()
+        .runOnUiThread(
+            () -> {
+              TvPicker.show(getActivity(), c, active, () -> notifyListeners("tvDisconnect", new JSObject()));
+              call.resolve();
+            });
   }
 
   // ------------------------------------------------------------------ player

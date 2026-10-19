@@ -18,4 +18,6 @@
     <string name="tv_dlna">Телевизоры DLNA в сети</string>
     <string name="tv_none">Не найдено. Телефон и ТВ должны быть в одной Wi-Fi сети; на ТВ включите DLNA / медиасервер.</string>
     <string name="tv_unavailable">Передача на ТВ сейчас недоступна</string>
+    <string name="player_fullscreen">На весь экран</string>
+    <string name="tv_back">Вернуть на телефон</string>
 </resources>

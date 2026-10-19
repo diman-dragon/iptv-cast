@@ -46,7 +46,7 @@ btn(/^Edit playlist$/, card()).click(); await wait(30);
 q('.modal input[type=url]')[0].value = 'https://t.test/a2.m3u'; btn(/^Save$/).click(); await wait(100);
 ok('url change clears old check result', store.getChecks()[alpha.id] === undefined && store.customSources()[0].url.endsWith('a2.m3u'));
 // создать свой плейлист
-btn(/^Load$/).click(); await wait(30);
+(await import(root + 'dialogs/add.js')).openAddDialog(); await wait(30);
 btn(/^New$/).click(); await wait(30);
 q('.modal input')[0].value = 'My list'; btn(/^Add$/).click(); await wait(200);
 const mine = store.customSources().find((s) => s.name === 'My list');
@@ -86,9 +86,11 @@ syncTvOptions(); ok('TV options are handed to the native side', opts.length === 
 applyTvStarted({ kind: 'dlna', name: 'Living Room TV', location: 'http://tv/d.xml', controlUrl: 'http://tv/ctl', serviceType: 'urn:x:AVTransport:1', title: 'Chan X', url: adhoc.url, sub: 'g', logo: '' });
 ok('state: on TV, TV playing, phone not playing', getPlayback().onTv && getPlayback().tvPlaying && !getPlayback().playing && getPlayback().dlna?.name === 'Living Room TV');
 navigate('player'); await wait(50);
-ok('player tab: TV panel shows device, no "To TV" button', !q('.tv-panel')[0].hidden && /Living Room TV/.test(q('.tv-text')[0].textContent) && !q('.act').some((b) => /To TV/i.test(b.textContent)), q('.act').map((b) => b.textContent));
-await togglePlay(); ok('pause goes to the TV', dlna.at(-1)[0] === 'pause' && getPlayback().tvPlaying === false, dlna);
-await togglePlay(); ok('resume goes to the TV', dlna.at(-1)[0] === 'play');
+ok('player tab: placeholder says it plays on the TV', /Playing on TV: Living Room TV/.test(q('.stage-ph')[0].textContent), q('.stage-ph')[0].textContent);
+ok('player tab: TV button lit, no old history/TV panel', q('.pc')[4].classList.contains('on') && !q('.tv-panel').length && !q('.player .lib-items').length);
+const { startStop } = await import(root + 'iptv/playback.js');
+await startStop(); ok('Stop on TV sends stop and keeps the channel', dlna.at(-1)[0] === 'stop' && getPlayback().tvPlaying === false && getPlayback().channel.url === adhoc.url, dlna.at(-1));
+await startStop(); ok('Start on TV sends the channel again', dlna.at(-1)[0] === 'play' && dlna.at(-1)[1] === adhoc.url && getPlayback().tvPlaying === true, dlna.at(-1));
 // пока ТВ подключён, нажатие на канал сразу идёт на ТВ, а на телефоне ничего не открывается
 const next = { name: 'Chan Z', url: 'http://x/z.m3u8', group: 'g', logo: '' };
 await playChannel(next, [adhoc, next]); await wait(30);
@@ -97,7 +99,7 @@ ok('tap while TV connected: sent to the TV, nothing played on the phone', dlna.a
 Iptv.dlnaPlay = async () => { throw new Error('UPnP SetAVTransportURI: HTTP 701'); };
 await playChannel({ ...next, url: 'http://x/bad.m3u8' }); await wait(50);
 ok('TV failure shows toast + status', !!q('.toast')[0] && getPlayback().tvError.includes('701'), q('.toast')[0]?.textContent);
-ok('player tab shows TV failure', /The TV could not play/.test(q('.now-status')[0]?.textContent), q('.now-status')[0]?.textContent);
+ok('player tab shows TV failure in the window', /The TV could not play/.test(q('.stage-ph')[0]?.textContent), q('.stage-ph')[0]?.textContent);
 // канал с особым User-Agent идёт через телефон-прокси
 Iptv.dlnaPlay = async (a) => { dlna.push(['play', a.url, a.proxy]); };
 await playChannel({ ...next, url: 'http://x/ua.m3u8', ua: 'X' }); await wait(30);
