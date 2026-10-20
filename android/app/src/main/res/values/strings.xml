@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">IPTV Cast</string>
-    <string name="title_activity_main">IPTV Cast</string>
+    <string name="app_name">DataLaw IPTV</string>
+    <string name="title_activity_main">DataLaw IPTV</string>
     <string name="package_name">com.iptvcast.app</string>
     <string name="custom_url_scheme">com.iptvcast.app</string>
     <string name="player_close">Close</string>
@@ -24,4 +24,5 @@
     <string name="tv_unavailable">Casting is not available right now</string>
     <string name="player_fullscreen">Full screen</string>
     <string name="tv_back">Back to the phone</string>
+    <string name="player_exit_fullscreen">Exit full screen</string>
 </resources>

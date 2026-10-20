@@ -61,6 +61,7 @@ public class PlayerActivity extends AppCompatActivity {
   private PlayerView view;
   private LinearLayout topBar;
   private LinearLayout errorBox;
+  private LinearLayout cluster; // quality + exit full screen: the same buttons as in the Player tab
   private TextView titleView;
   private TextView errorText;
   private ImageButton prevBtn;
@@ -110,14 +111,7 @@ public class PlayerActivity extends AppCompatActivity {
   }
 
   private ImageButton iconButton(int res, int descRes, View.OnClickListener click) {
-    ImageButton b = new ImageButton(this);
-    b.setImageResource(res);
-    b.setBackground(null);
-    b.setColorFilter(Color.WHITE);
-    b.setContentDescription(getString(descRes));
-    b.setOnClickListener(click);
-    b.setLayoutParams(new LinearLayout.LayoutParams(dp(48), dp(48)));
-    return b;
+    return PlayerButtons.button(this, res, descRes, click);
   }
 
   @Override
@@ -138,12 +132,8 @@ public class PlayerActivity extends AppCompatActivity {
     view.setShowNextButton(false);
     view.setShowPreviousButton(false);
     // Шестерёнка внизу плеера — выбор качества (вместо скорости и звуковых дорожек, они для эфира не нужны).
-    View gear = controlView("exo_settings");
-    if (gear != null) {
-      gear.setVisibility(View.VISIBLE);
-      gear.setContentDescription(getString(R.string.player_quality));
-      gear.setOnClickListener(v -> showQualityDialog());
-    }
+    View gear = controlView("exo_settings"); // the stock gear is replaced by the shared quality button
+    if (gear != null) gear.setVisibility(View.GONE);
     root.addView(
         view, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
@@ -155,18 +145,16 @@ public class PlayerActivity extends AppCompatActivity {
         new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[] {0xCC000000, 0x00000000}));
     topBar.setPadding(dp(8), dp(8), dp(8), dp(24));
 
-    ImageButton close = iconButton(R.drawable.ic_close, R.string.player_close, v -> closePlayer());
     titleView = new TextView(this);
     titleView.setTextColor(Color.WHITE);
     titleView.setTextSize(17);
     titleView.setTypeface(null, Typeface.BOLD);
     titleView.setSingleLine(true);
     titleView.setEllipsize(TextUtils.TruncateAt.END);
-    titleView.setPadding(dp(4), 0, dp(8), 0);
+    titleView.setPadding(dp(12), 0, dp(8), 0);
     prevBtn = iconButton(R.drawable.ic_prev, R.string.player_prev, v -> zap(-1));
     nextBtn = iconButton(R.drawable.ic_next, R.string.player_next, v -> zap(1));
     ImageButton tvBtn = iconButton(R.drawable.ic_cast, R.string.player_tv, v -> TvPicker.show(this));
-    topBar.addView(close);
     topBar.addView(titleView, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
     topBar.addView(tvBtn);
     topBar.addView(prevBtn);
@@ -208,6 +196,16 @@ public class PlayerActivity extends AppCompatActivity {
     ep.rightMargin = dp(24);
     root.addView(errorBox, ep);
 
+    cluster =
+        PlayerButtons.cluster(
+            this,
+            v -> QualityPicker.show(this, PlayerHolder.get(this)),
+            v -> closePlayer(),
+            true);
+    root.addView(
+        cluster,
+        new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.END));
+
     setContentView(root);
 
     // Keep the top bar clear of the notch and the status bar when they are visible.
@@ -224,10 +222,11 @@ public class PlayerActivity extends AppCompatActivity {
           @Override
           public void onVisibilityChanged(int visibility) {
             topBar.setVisibility(visibility);
+            cluster.setVisibility(visibility);
           }
         });
 
-    // System Back / gesture closes the window and stops the channel.
+    // System Back / gesture leaves full screen (the channel keeps playing in the Player tab).
     getOnBackPressedDispatcher()
         .addCallback(
             this,
@@ -266,43 +265,8 @@ public class PlayerActivity extends AppCompatActivity {
     }
   }
 
-  /** Quality = the highest picture height the player may choose (it still adapts below that). */
   private void showQualityDialog() {
-    ExoPlayer p = PlayerHolder.get(this);
-    TreeSet<Integer> found = new TreeSet<>(Collections.reverseOrder());
-    for (Tracks.Group g : p.getCurrentTracks().getGroups()) {
-      if (g.getType() != C.TRACK_TYPE_VIDEO) continue;
-      for (int i = 0; i < g.length; i++) {
-        int h = g.getTrackFormat(i).height;
-        if (g.isTrackSupported(i) && h > 0) found.add(h);
-      }
-    }
-    if (found.size() < 2) {
-      Toast.makeText(this, R.string.player_quality_none, Toast.LENGTH_SHORT).show();
-      return;
-    }
-    List<Integer> heights = new ArrayList<>(found);
-    String[] labels = new String[heights.size() + 1];
-    labels[0] = getString(R.string.player_quality_auto);
-    int limit = p.getTrackSelectionParameters().maxVideoHeight; // Integer.MAX_VALUE = auto
-    int checked = 0;
-    for (int i = 0; i < heights.size(); i++) {
-      labels[i + 1] = heights.get(i) + "p";
-      if (heights.get(i) == limit) checked = i + 1;
-    }
-    new AlertDialog.Builder(this)
-        .setTitle(R.string.player_quality)
-        .setSingleChoiceItems(
-            labels,
-            checked,
-            (dialog, which) -> {
-              TrackSelectionParameters.Builder b = p.getTrackSelectionParameters().buildUpon();
-              b.setMaxVideoSize(Integer.MAX_VALUE, which == 0 ? Integer.MAX_VALUE : heights.get(which - 1));
-              p.setTrackSelectionParameters(b.build());
-              dialog.dismiss();
-              view.showController();
-            })
-        .show();
+    QualityPicker.show(this, PlayerHolder.get(this));
   }
 
   private void refreshTitle() {
@@ -319,12 +283,8 @@ public class PlayerActivity extends AppCompatActivity {
     refreshTitle();
   }
 
-  /** ✕ or Back: stop the channel and leave. (Home goes to picture-in-picture when the stream is playing.) */
+  /** Exit full screen / Back: back to the Player tab; the channel keeps playing in its window. */
   private void closePlayer() {
-    ExoPlayer p = PlayerHolder.get(this);
-    p.stop();
-    p.clearMediaItems();
-    ChannelQueue.clear();
     finish();
   }
 
@@ -391,7 +351,7 @@ public class PlayerActivity extends AppCompatActivity {
     super.onStop();
     ExoPlayer p = PlayerHolder.get(this);
     p.removeListener(listener);
-    p.pause(); // no background playback and no notification: the picture is gone, so is the sound
+    if (!isFinishing()) p.pause(); // sent to the background: no background playback and no notification
     view.setPlayer(null);
   }
 
@@ -415,5 +375,6 @@ public class PlayerActivity extends AppCompatActivity {
     super.onPictureInPictureModeChanged(inPip, config);
     view.setUseController(!inPip);
     topBar.setVisibility(inPip ? View.GONE : View.VISIBLE);
+    cluster.setVisibility(inPip ? View.GONE : View.VISIBLE);
   }
 }

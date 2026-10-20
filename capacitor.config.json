@@ -1,7 +1,9 @@
 {
   "appId": "com.iptvcast.app",
-  "appName": "IPTV Cast",
+  "appName": "DataLaw IPTV",
   "webDir": "dist",
   "backgroundColor": "#000000",
-  "android": { "allowMixedContent": true }
+  "android": {
+    "allowMixedContent": true
+  }
 }

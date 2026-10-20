@@ -22,6 +22,7 @@ export function parseM3u(text) {
       cur = {
         name: (comma >= 0 ? line.slice(comma + 1).trim() : '') || attr(line, 'tvg-name'),
         logo: attr(line, 'tvg-logo'),
+        id: attr(line, 'tvg-id'),
         group: attr(line, 'group-title') || group,
         ua: attr(line, 'http-user-agent'),
         ref: attr(line, 'http-referrer') || attr(line, 'http-referer'),
@@ -43,6 +44,15 @@ export function parseM3u(text) {
     }
   }
   return out;
+}
+
+// Плейлист целиком: каналы и адреса программы передач (XMLTV) из заголовка `#EXTM3U x-tvg-url="..."`.
+export function parseM3uFull(text) {
+  const channels = parseM3u(text);
+  const head = /^\uFEFF?\s*#EXTM3U([^\r\n]*)/.exec(text)?.[1] ?? '';
+  const raw = /(?:x-tvg-url|url-tvg)="([^"]*)"/i.exec(head)?.[1] ?? '';
+  const epg = [...new Set(raw.split(',').map((u) => u.trim()).filter((u) => /^https?:\/\//i.test(u)))];
+  return { channels, epg };
 }
 
 // Убирает «(1080p)», «[Geo-blocked]» из показа, оставляя исходное имя для поиска.

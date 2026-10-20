@@ -15,6 +15,12 @@ import { createSwitch } from '../ui/switch.js';
 import { createThemeSwitch } from '../ui/theme-switch.js';
 import { toast } from '../ui/toast.js';
 
+function epgRow() {
+  const field = createField('set.epg', { hintKey: 'set.epgHint', placeholderKey: 'set.epgPh', type: 'url', value: getPref('epgUrl') });
+  field.input.addEventListener('change', () => setPref('epgUrl', field.input.value.trim()));
+  return field.node;
+}
+
 function uaRow() {
   const field = createField('set.ua', { hintKey: 'set.uaHint', placeholderKey: 'set.uaPh', value: getPref('ua') });
   field.input.addEventListener('change', () => setPref('ua', field.input.value.trim()));
@@ -81,6 +87,7 @@ export const PAGES = [
       createRow('set.castProxy', createSwitch(() => getPref('castProxy'), (v) => { setPref('castProxy', v); syncTvOptions(); })),
       createRow('set.dlnaProxy', createSwitch(() => getPref('dlnaProxy'), (v) => { setPref('dlnaProxy', v); syncTvOptions(); })),
       uaRow(),
+      epgRow(),
     ],
   },
   { id: 'data', titleKey: 'set.sectionData', build: () => [dataBlock()] },

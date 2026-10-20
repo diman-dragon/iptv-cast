@@ -44,6 +44,13 @@ const url = q('.modal input[type=url]')[0]; url.value = 'https://t.test/a.m3u';
 btn(/^Add$/, q('.modal')[0]).click(); await wait(500);
 ok('after loading a playlist the app goes to the Library', getScreen() === 'library' && store.customSources().length === 1, getScreen());
 ok('check button appears, playlist shows in the Library (opened inside)', q('.channels .item').length === 3);
+// клик по каналу → вкладка «Плеер», играет в окне (не на весь экран)
+q('.channels .item')[0].click(); await wait(120);
+ok('tap on a channel opens the Player tab and plays in its window (not full screen)', getScreen() === 'player' && plays.at(-1).video === false && plays.at(-1).url === 'http://a/1.m3u8', [getScreen(), plays.at(-1)]);
+ok('Player tab shows the guide block under the buttons', q('.player')[0].children.length === 3 && !q('.guide')[0].hidden && /No guide for this channel/.test(q('.guide')[0].textContent), q('.guide')[0]?.textContent);
+ok('About mentions the DataLaw project and carries the mark', /DataLaw IPTV/.test(q('.about-name')[0].textContent) && /DataLaw/.test(q('.about-text')[0].textContent) && !!q('.about-ico svg path').length && /DataLaw/.test(q('.about-tag')[0].textContent), q('.about-text')[0]?.textContent);
+// сбросить выбранный канал, чтобы дальше проверять «пустой» плеер
+{ const S = pb.getPlayback(); S.channel = null; S.playing = false; S.loading = false; S.list = []; plays.length = 0; document.dispatchEvent(new w.Event('langchange')); navigate('library'); await wait(50); }
 // назад к списку
 const { setView } = await import(root + 'iptv/view-state.js'); setView({ sourceId: null }); await wait(50);
 ok('Library lists the playlist with check button visible', q('.src').length === 1 && !q('.check-btn')[0].hidden);
@@ -53,7 +60,7 @@ btn(/^Clear history$/, (navigate('settings'), q('.data-actions')[0]));
 const ch = { name: 'Chan One', url: 'http://a/1.m3u8', group: 'G', logo: '' };
 const list = [ch, { name: 'Two', url: 'http://a/2.m3u8', group: 'G', logo: '' }, { name: 'Three', url: 'http://a/3.m3u8', group: 'G', logo: '' }];
 navigate('player'); await wait(60);
-ok('empty player: only the window and the button row (no history, no cards)', q('.player')[0].children.length === 2 && q('.stage').length === 1 && q('.pc-row .pc').length === 5 && /Nothing is playing/.test(q('.stage-ph')[0].textContent));
+ok('empty player: the window, the button row and (hidden until a channel is chosen) the guide; no history, no cards', q('.player')[0].children.length === 3 && q('.guide')[0].hidden && q('.stage').length === 1 && q('.pc-row .pc').length === 5 && /Nothing is playing/.test(q('.stage-ph')[0].textContent));
 ok('buttons disabled with nothing selected', q('.pc')[2].disabled && q('.pc')[4].disabled);
 await pb.playChannel(ch, list, { open: false }); await wait(60);
 ok('start from the tab plays in the window (video:false) with the list as queue', plays.at(-1).video === false && plays.at(-1).queue.length === 3 && plays.at(-1).index === 0, plays.at(-1));

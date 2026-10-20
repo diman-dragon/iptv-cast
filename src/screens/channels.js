@@ -1,6 +1,7 @@
 import { el, button, icon, image } from '../core/dom.js';
 import { bindAria } from '../i18n/bind.js';
 import { t } from '../i18n/i18n.js';
+import { navigate } from '../app/router.js';
 import { cleanName, tagsOf } from '../iptv/parse.js';
 import { getPlayback, onPlayback, playChannel } from '../iptv/playback.js';
 import { clearRemoved, loadSource } from '../iptv/playlist.js';
@@ -147,7 +148,11 @@ export function createChannelsView({ onBack }) {
     };
     item._sync();
     item.append(createThumb(ch), meta, acts);
-    item.addEventListener('click', () => playChannel(ch, filtered));
+    // Канал играет во вкладке «Плеер», в окне просмотра. На весь экран — кнопкой в самом окне.
+    item.addEventListener('click', () => {
+      playChannel(ch, filtered, { open: false });
+      navigate('player');
+    });
     return item;
   }
 

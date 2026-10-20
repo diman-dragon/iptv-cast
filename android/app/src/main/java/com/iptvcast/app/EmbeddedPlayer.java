@@ -2,12 +2,10 @@ package com.iptvcast.app;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
@@ -66,33 +64,18 @@ final class EmbeddedPlayer {
     box.addView(
         error, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
 
-    LinearLayout bar = new LinearLayout(a);
-    bar.setOrientation(LinearLayout.HORIZONTAL);
-    bar.addView(button(R.drawable.ic_tune, R.string.player_quality, v -> QualityPicker.show(activity, PlayerHolder.get(activity))));
-    bar.addView(
-        button(R.drawable.ic_fullscreen, R.string.player_fullscreen, v -> activity.startActivity(new Intent(activity, PlayerActivity.class))));
+    LinearLayout bar =
+        PlayerButtons.cluster(
+            a,
+            v -> QualityPicker.show(activity, PlayerHolder.get(activity)),
+            v -> activity.startActivity(new Intent(activity, PlayerActivity.class)),
+            false);
     box.addView(bar, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.END));
     box.setVisibility(View.GONE);
   }
 
   private int dp(int v) {
     return Math.round(v * activity.getResources().getDisplayMetrics().density);
-  }
-
-  private ImageButton button(int icon, int description, View.OnClickListener click) {
-    ImageButton b = new ImageButton(activity);
-    b.setImageResource(icon);
-    b.setColorFilter(Color.WHITE);
-    b.setContentDescription(activity.getString(description));
-    GradientDrawable bg = new GradientDrawable();
-    bg.setShape(GradientDrawable.OVAL);
-    bg.setColor(0x88000000);
-    b.setBackground(bg);
-    b.setOnClickListener(click);
-    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(40), dp(40));
-    lp.setMargins(dp(4), dp(4), dp(4), dp(8));
-    b.setLayoutParams(lp);
-    return b;
   }
 
   /** Puts the window over the web page. x, y, w, h are CSS pixels measured inside the web view. */

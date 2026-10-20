@@ -20,4 +20,5 @@
     <string name="tv_unavailable">Передача на ТВ сейчас недоступна</string>
     <string name="player_fullscreen">На весь экран</string>
     <string name="tv_back">Вернуть на телефон</string>
+    <string name="player_exit_fullscreen">Выйти из полного экрана</string>
 </resources>

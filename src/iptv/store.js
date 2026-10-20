@@ -22,6 +22,7 @@ const DEFAULTS = {
   castProxy: true, // Chromecast получает поток через телефон (CORS, User-Agent, HLS)
   dlnaProxy: false, // DLNA-телевизор берёт поток напрямую; через телефон — только по желанию
   ua: '', // свой User-Agent для всех каналов
+  epgUrl: '', // свой источник программы передач (XMLTV)
   view: 'list', // вид библиотеки
   cview: 'list', // вид списка каналов
   lastSource: 'freetv',

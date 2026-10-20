@@ -105,6 +105,17 @@ export default {
   'now.stoppedHint': 'Press ▶ to start',
   'lib.openSettings': 'Open settings',
   'set.loadLists': 'Load playlists',
+  'guide.title': 'Guide',
+  'guide.now': 'Now',
+  'guide.loading': 'Loading the guide…',
+  'guide.none': 'No guide for this channel',
+  'guide.noneHint': 'Set the guide source (XMLTV) in Settings → Playback. A playlist can carry one in its header.',
+  'guide.error': 'Could not load the guide: {d}',
+  'set.epg': 'TV guide (XMLTV)',
+  'set.epgHint': 'A link to an XMLTV file (.xml or .xml.gz). Needed when the playlist has none. Channels are matched by tvg-id or name.',
+  'set.epgPh': 'https://…/guide.xml.gz',
+  'about.project': 'Part of the DataLaw project. DataLaw IPTV is the project’s app for watching your TV playlists: library, player, TV guide and casting to a TV.',
+  'about.name': 'DataLaw IPTV',
   'nav.settings': 'Settings',
 
   'type.all': 'All',
@@ -224,7 +235,7 @@ export default {
   'set.historyCleared': 'History cleared',
   'settings.version': 'Version {v}',
 
-  'about.tag': 'A player for TV playlists',
+  'about.tag': 'IP TV · DataLaw project',
   'about.lead': 'No ads and no account. A library of your playlists, your own channels and casting to the TV over your home network.',
   'about.legal': 'The app contains no channels or playlists and distributes no content: it is a player. What to load and from where is up to you; whether a stream works depends on the broadcaster and your country.',
 

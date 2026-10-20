@@ -3,6 +3,7 @@ import { bindAria } from '../i18n/bind.js';
 import { t } from '../i18n/i18n.js';
 import { getScreen, onNavigate } from '../app/router.js';
 import { cleanName } from '../iptv/parse.js';
+import { getProgram } from '../iptv/epg.js';
 import { Iptv } from '../iptv/native.js';
 import { canZap, errorText, getPlayback, hasTv, onPlayback, openTvPicker, setSleep, startStop, tvName, zap } from '../iptv/playback.js';
 import { ICONS } from '../ui/icons.js';
@@ -83,7 +84,10 @@ export function renderNow() {
   const row = el('div', 'pc-row');
   row.append(sleepWrap, prev, play, next, tv);
 
-  root.append(stage, row);
+  // ---------- программа передач: под окном просмотра
+  const guide = el('div', 'guide');
+  guide.hidden = true;
+  root.append(stage, row, guide);
 
   // ---------- нативное видео поверх окна просмотра
   // Нативный вид лежит над страницей, поэтому прячем его, пока открыто что-то поверх (список сна, окна).
@@ -94,7 +98,10 @@ export function renderNow() {
   };
   function syncEmbed() {
     const r = stage.getBoundingClientRect();
-    if (!wantVideo() || r.width < 2) {
+    // Окно просмотра ушло под шапку или вкладки при прокрутке — нативное видео не должно перекрывать их.
+    const view = root.closest('.screen')?.getBoundingClientRect();
+    const clipped = view && view.height > 0 && (r.top < view.top - 1 || r.bottom > view.bottom + 1);
+    if (!wantVideo() || r.width < 2 || clipped) {
       if (last !== 'hide') {
         last = 'hide';
         Iptv.embedHide();
@@ -107,11 +114,55 @@ export function renderNow() {
       Iptv.embedShow({ x: r.left, y: r.top, w: r.width, h: r.height });
     }
   }
-  setInterval(syncEmbed, 200); // окно едет вместе со страницей (переходы, прокрутка, поворот)
+  setInterval(syncEmbed, 200); // окно едет вместе со страницей (переходы, поворот)
+  queueMicrotask(() => root.closest('.screen')?.addEventListener('scroll', syncEmbed, { passive: true })); // и при прокрутке — сразу
   onNavigate(() => {
     closePop();
     syncEmbed();
   });
+
+  // ---------- программа: «Сейчас» с полосой прогресса и ближайшие передачи
+  const hhmm = (ms) => new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  let gUrl = '';
+  let gSeq = 0;
+  async function drawGuide(force = false) {
+    const ch = getPlayback().channel;
+    guide.hidden = !ch;
+    if (!ch) {
+      gUrl = '';
+      return;
+    }
+    if (!force && gUrl === ch.url) return;
+    gUrl = ch.url;
+    const mine = ++gSeq;
+    guide.replaceChildren(el('div', 'guide-title', t('guide.title')), el('div', 'muted small', t('guide.loading')));
+    const g = await getProgram(ch);
+    if (mine !== gSeq) return;
+    const head = el('div', 'guide-title', t('guide.title'));
+    if (!g || g.error) {
+      guide.replaceChildren(head, el('div', 'muted small', g?.error ? t('guide.error', { d: g.error }) : t('guide.none')), ...(g?.error ? [] : [el('div', 'muted small guide-hint', t('guide.noneHint'))]));
+      return;
+    }
+    const rows = [];
+    if (g.now) {
+      const pct = Math.max(0, Math.min(100, ((Date.now() - g.now.start) / (g.now.stop - g.now.start)) * 100));
+      const fill = el('div', 'progress-fill');
+      fill.style.width = `${pct}%`;
+      const bar = el('div', 'progress');
+      bar.append(fill);
+      const now = el('div', 'guide-now');
+      now.append(el('div', 'guide-badge', t('guide.now')), el('div', 'guide-name', g.now.title), el('div', 'muted small', `${hhmm(g.now.start)} – ${hhmm(g.now.stop)}`), bar);
+      if (g.now.desc) now.append(el('div', 'guide-desc', g.now.desc));
+      rows.push(now);
+    }
+    g.next.forEach((x) => {
+      const r = el('div', 'guide-row');
+      r.append(el('span', 'guide-time', hhmm(x.start)), el('span', 'guide-name', x.title));
+      rows.push(r);
+    });
+    guide.replaceChildren(head, ...rows);
+  }
+  setInterval(() => drawGuide(true), 60000); // «Сейчас» двигается сам
 
   // ---------- заглушка и состояние кнопок
   const phBlock = (svg, title, sub, bad = false) => {
@@ -147,6 +198,7 @@ export function renderNow() {
     minutes = S.sleepDeadline ? minutes : 0;
     tickSleep();
     syncEmbed();
+    drawGuide();
   }
 
   // Обратный отсчёт таймера сна на самой кнопке.

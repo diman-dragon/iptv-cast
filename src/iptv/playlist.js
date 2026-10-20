@@ -1,6 +1,6 @@
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import { kvDel, kvGet, kvSet } from '../core/kv.js';
-import { parseM3u } from './parse.js';
+import { parseM3u, parseM3uFull } from './parse.js';
 import { FAV_ID, HISTORY_ID, MINE_ID } from './sources.js';
 import { favorites, history, localChannels } from './store.js';
 
@@ -165,8 +165,9 @@ export async function loadSource(source, { force = false } = {}) {
       }
     }
   }
-  const channels = parseM3u(text);
+  const { channels, epg } = parseM3uFull(text);
   if (!channels.length) throw new Error('empty');
+  if (epg.length) channels.forEach((c) => (c.epg = epg)); // откуда брать программу этого канала
   const value = { channels, time };
   remember(source.id, value);
   return visible(value, cached);
