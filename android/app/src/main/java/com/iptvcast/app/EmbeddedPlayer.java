@@ -102,14 +102,22 @@ final class EmbeddedPlayer {
     box.setLayoutParams(lp);
     box.setVisibility(View.VISIBLE);
     box.bringToFront();
-    attach();
+    bind(false);
   }
 
-  private void attach() {
+  /**
+   * Подключает плеер к окну. force: принудительно заново привязать картинку. Нужно после полноэкранного окна:
+   * оно забрало видео себе, а PlayerView считает, что плеер у него всё ещё подключён, и сам ничего не делает.
+   * Без force (обычное перемещение окна при прокрутке) картинку не трогаем, чтобы она не мигала.
+   */
+  private void bind(boolean force) {
     ExoPlayer p = PlayerHolder.get(activity);
     p.removeListener(listener);
     p.addListener(listener);
-    view.setPlayer(p);
+    if (force || view.getPlayer() != p) {
+      view.setPlayer(null);
+      view.setPlayer(p);
+    }
     shown = true;
   }
 
@@ -120,7 +128,7 @@ final class EmbeddedPlayer {
 
   /** The app came back from the full-screen window: the picture has to be handed to this view again. */
   void reattach() {
-    if (shown) attach();
+    if (shown) bind(true);
   }
 
   void hide() {
