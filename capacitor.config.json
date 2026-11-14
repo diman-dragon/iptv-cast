@@ -1,6 +1,6 @@
 {
   "appId": "com.iptvcast.app",
-  "appName": "DataLaw IPTV",
+  "appName": "DL-IPTV",
   "webDir": "dist",
   "backgroundColor": "#000000",
   "android": {

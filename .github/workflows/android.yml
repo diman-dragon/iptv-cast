@@ -42,7 +42,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: IPTV-Cast-${{ steps.apk.outputs.version }}
+          name: DL-IPTV-${{ steps.apk.outputs.version }}
           path: ${{ steps.apk.outputs.file }}
 
       - name: Publish release

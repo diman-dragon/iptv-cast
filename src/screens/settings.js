@@ -25,7 +25,9 @@ export function renderSettings() {
   });
 
   let shown = -1;
+  let aligning = false; // идёт перестановка после поворота: прокрутку страницами не считаем
   const mark = () => {
+    if (aligning) return;
     const i = Math.max(0, Math.min(PAGES.length - 1, Math.round(pager.scrollLeft / (pager.clientWidth || 1))));
     if (i === shown) return;
     shown = i;
@@ -42,6 +44,14 @@ export function renderSettings() {
   pager.addEventListener('scroll', () => {
     cancelAnimationFrame(frame);
     frame = requestAnimationFrame(mark);
+  });
+
+  // Поворот телефона меняет ширину страницы: лента должна остаться ровно на той, что открыта.
+  window.addEventListener('resize', () => {
+    if (shown < 0) return;
+    aligning = true;
+    pager.scrollLeft = shown * pager.clientWidth;
+    requestAnimationFrame(() => requestAnimationFrame(() => (aligning = false)));
   });
 
   root.append(tabs, pager, dots);

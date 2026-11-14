@@ -2,7 +2,7 @@ name: Release AAB (Google Play)
 
 # Запускается вручную: Actions → Release AAB → Run workflow.
 # AAB подписывается публичным ключом из репозитория (android/app/debug.keystore): секреты не нужны.
-# Для настоящей публикации задайте секреты IPTV_KEYSTORE_* — см. README.
+# Для настоящей публикации подпишите AAB своим ключом — см. README.
 on:
   workflow_dispatch:
 
@@ -38,5 +38,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: IPTV-Cast-${{ steps.aab.outputs.version }}-aab
+          name: DL-IPTV-${{ steps.aab.outputs.version }}-aab
           path: ${{ steps.aab.outputs.file }}

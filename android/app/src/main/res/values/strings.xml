@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">DataLaw IPTV</string>
-    <string name="title_activity_main">DataLaw IPTV</string>
+    <string name="app_name">DL-IPTV</string>
+    <string name="title_activity_main">DL-IPTV</string>
     <string name="package_name">com.iptvcast.app</string>
     <string name="custom_url_scheme">com.iptvcast.app</string>
     <string name="player_close">Close</string>

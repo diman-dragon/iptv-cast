@@ -4,7 +4,7 @@ import { JSDOM } from 'jsdom';
 const dom = new JSDOM('<!doctype html><div id="app"></div>', { url: 'https://localhost/', pretendToBeVisual: true });
 const w = dom.window; w.open = () => {};
 w.Element.prototype.getBoundingClientRect = function () { return this.classList?.contains('stage') ? { left: 16, top: 120, width: 360, height: 203, right: 376, bottom: 323 } : { left: 0, top: 0, width: 0, height: 0, right: 0, bottom: 0 }; };
-Object.assign(globalThis, { window: w, document: w.document, localStorage: w.localStorage, HTMLElement: w.HTMLElement, Option: w.Option, Event: w.Event, AbortController: w.AbortController, matchMedia: () => ({ matches: true }), __APP_VERSION__: '0.4.3', requestAnimationFrame: (f) => setTimeout(f, 0), cancelAnimationFrame: clearTimeout });
+Object.assign(globalThis, { window: w, document: w.document, localStorage: w.localStorage, HTMLElement: w.HTMLElement, Option: w.Option, Event: w.Event, AbortController: w.AbortController, matchMedia: () => ({ matches: true }), __APP_VERSION__: '0.4.4', requestAnimationFrame: (f) => setTimeout(f, 0), cancelAnimationFrame: clearTimeout });
 w.matchMedia = globalThis.matchMedia;
 const p2 = (n) => String(n).padStart(2, '0');
 const fmt = (ms, tz = '+0300') => { const d = new Date(ms + 3 * 3600000); return `${d.getUTCFullYear()}${p2(d.getUTCMonth() + 1)}${p2(d.getUTCDate())}${p2(d.getUTCHours())}${p2(d.getUTCMinutes())}${p2(d.getUTCSeconds())} ${tz}`; };

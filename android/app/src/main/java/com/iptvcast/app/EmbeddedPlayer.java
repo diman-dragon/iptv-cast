@@ -29,6 +29,13 @@ final class EmbeddedPlayer {
       new Player.Listener() {
         @Override
         public void onPlayerError(PlaybackException e) {
+          if (e.errorCode == PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW) {
+            // Эфир убежал вперёд (долгая пауза): прыгаем на «сейчас» и пробуем снова, без сообщения об ошибке.
+            ExoPlayer p = PlayerHolder.get(activity);
+            p.seekToDefaultPosition();
+            p.prepare();
+            return;
+          }
           error.setText(PlayerErrors.explain(activity, e) + "\n" + e.getErrorCodeName());
           error.setVisibility(View.VISIBLE);
         }
@@ -104,6 +111,11 @@ final class EmbeddedPlayer {
     p.addListener(listener);
     view.setPlayer(p);
     shown = true;
+  }
+
+  /** Окно сейчас лежит поверх страницы (вкладка «Плеер» открыта и что-то играет). */
+  boolean isActive() {
+    return shown;
   }
 
   /** The app came back from the full-screen window: the picture has to be handed to this view again. */

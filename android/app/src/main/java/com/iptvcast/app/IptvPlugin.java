@@ -2,6 +2,7 @@ package com.iptvcast.app;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
@@ -57,6 +58,7 @@ public class IptvPlugin extends Plugin {
   private RemoteMediaClient castCallbackOwner;
   private ExoPlayer listened;
   private boolean moved = true; // result of the last zap
+  private boolean pausedByStop; // приложение ушло в фон: канал поставлен на паузу, при возврате продолжим
   private long sleepEnd = 0; // SystemClock.elapsedRealtime() deadline, 0 = off
 
   // ------------------------------------------------------------------ lifecycle
@@ -112,6 +114,38 @@ public class IptvPlugin extends Plugin {
   @Override
   protected void handleOnResume() {
     if (embedded != null) embedded.reattach();
+    if (pausedByStop) {
+      // Вернулись в приложение: продолжаем с «сейчас» (эфир за время паузы ушёл вперёд).
+      pausedByStop = false;
+      ExoPlayer p = PlayerHolder.get(getContext());
+      if (p.getMediaItemCount() > 0) {
+        p.seekToDefaultPosition();
+        p.play();
+      }
+    }
+  }
+
+  /** Фоновых служб нет: ушли из приложения (Home, экран погас) — канал на паузе. Полный экран не в счёт. */
+  @Override
+  protected void handleOnStop() {
+    if (PlayerActivity.isOpen()) return; // вперёд вышло полноэкранное окно (оно само ставит на паузу)
+    ExoPlayer p = PlayerHolder.get(getContext());
+    if (p.isPlaying()) {
+      p.pause();
+      pausedByStop = true;
+    }
+  }
+
+  private boolean landscape() {
+    return getContext().getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+  }
+
+  /** Поворот: альбомная ориентация при играющем в окне вкладки канале — на весь экран. */
+  void onOrientation(int orientation) {
+    if (orientation != Configuration.ORIENTATION_LANDSCAPE) return;
+    if (embedded == null || !embedded.isActive() || PlayerActivity.isOpen()) return;
+    if (PlayerHolder.get(getContext()).getMediaItemCount() == 0) return;
+    getActivity().startActivity(new Intent(getContext(), PlayerActivity.class));
   }
 
   /** "Show on TV" from the Player tab: {url, title, sub, logo, ua, ref, active}. */
@@ -170,6 +204,7 @@ public class IptvPlugin extends Plugin {
 
           @Override
           public void onPlayerError(PlaybackException e) {
+            if (e.errorCode == PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW) return; // окно плеера само вернётся в эфир
             ChannelQueue.error = e.getErrorCodeName();
             push(p);
           }
@@ -238,7 +273,9 @@ public class IptvPlugin extends Plugin {
           moved = true;
           ChannelQueue.set(list, start);
           ChannelQueue.start(getContext());
-          if (Boolean.TRUE.equals(call.getBoolean("video", false))) {
+          // В альбомной ориентации канал сразу идёт на весь экран; в книжной — только если попросили.
+          boolean fullscreen = Boolean.TRUE.equals(call.getBoolean("video", false)) || landscape();
+          if (fullscreen && !PlayerActivity.isOpen()) {
             getActivity().startActivity(new Intent(getContext(), PlayerActivity.class));
           }
         });

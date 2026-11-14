@@ -26,7 +26,7 @@ async function viaNative(url) {
     responseType: 'text',
     connectTimeout: 20000,
     readTimeout: 60000,
-    headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 14) IPTVCast' },
+    headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 14) DL-IPTV' },
   });
   if (r.status >= 400) throw new Error(`HTTP ${r.status}`);
   return typeof r.data === 'string' ? r.data : JSON.stringify(r.data ?? '');

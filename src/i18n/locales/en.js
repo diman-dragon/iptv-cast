@@ -114,8 +114,8 @@ export default {
   'set.epg': 'TV guide (XMLTV)',
   'set.epgHint': 'A link to an XMLTV file (.xml or .xml.gz). Needed when the playlist has none. Channels are matched by tvg-id or name.',
   'set.epgPh': 'https://…/guide.xml.gz',
-  'about.project': 'Part of the DataLaw project. DataLaw IPTV is the project’s app for watching your TV playlists: library, player, TV guide and casting to a TV.',
-  'about.name': 'DataLaw IPTV',
+  'about.project': 'Part of the DataLaw project. DL-IPTV is the project’s app for watching your TV playlists: library, player, TV guide and casting to a TV.',
+  'about.name': 'DL-IPTV',
   'nav.settings': 'Settings',
 
   'type.all': 'All',

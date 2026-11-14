@@ -14,6 +14,13 @@
   background: radial-gradient(circle at 50% 40%, var(--surface2), #000);
 }
 
+/* Альбомная ориентация: окно не выше экрана (сам канал при повороте уходит на весь экран) */
+@media (orientation: landscape) {
+  .stage {
+    max-height: 62dvh;
+  }
+}
+
 .stage-ph {
   position: absolute;
   inset: 0;

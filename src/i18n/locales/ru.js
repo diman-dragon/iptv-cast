@@ -114,8 +114,8 @@ export default {
   'set.epg': 'Программа передач (XMLTV)',
   'set.epgHint': 'Ссылка на файл XMLTV (.xml или .xml.gz). Нужна, если в плейлисте нет своей. Каналы сопоставляются по tvg-id или названию.',
   'set.epgPh': 'https://…/guide.xml.gz',
-  'about.project': 'Часть проекта DataLaw. DataLaw IPTV — приложение проекта для просмотра ваших ТВ-плейлистов: библиотека, плеер, программа передач и показ на ТВ.',
-  'about.name': 'DataLaw IPTV',
+  'about.project': 'Часть проекта DataLaw. DL-IPTV — приложение проекта для просмотра ваших ТВ-плейлистов: библиотека, плеер, программа передач и показ на ТВ.',
+  'about.name': 'DL-IPTV',
   'nav.settings': 'Настройки',
 
   'type.all': 'Все',

@@ -13,7 +13,6 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Toast;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -21,7 +20,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -34,16 +32,10 @@ import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
 import androidx.media3.common.Timeline;
-import androidx.media3.common.TrackSelectionParameters;
 import androidx.media3.common.Tracks;
-import androidx.media3.datasource.HttpDataSource;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.TreeSet;
 
 /**
  * The video window: full screen, with a close button, the system Back, transport controls,
@@ -58,6 +50,13 @@ public class PlayerActivity extends AppCompatActivity {
     if (a != null) a.finish();
   }
 
+  /** Полноэкранное окно открыто (и не закрывается). */
+  static boolean isOpen() {
+    PlayerActivity a = current.get();
+    return a != null && !a.isFinishing();
+  }
+
+  private boolean resumeOnStart; // ушли в фон во время просмотра: при возврате продолжаем
   private PlayerView view;
   private LinearLayout topBar;
   private LinearLayout errorBox;
@@ -119,6 +118,10 @@ public class PlayerActivity extends AppCompatActivity {
     super.onCreate(b);
     current = new WeakReference<>(this);
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    if (Build.VERSION.SDK_INT >= 28) {
+      // Видео идёт под вырез камеры; кнопки от него отодвигают отступы (см. слушатель insets ниже).
+      getWindow().getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+    }
 
     FrameLayout root = new FrameLayout(this);
     root.setBackgroundColor(Color.BLACK);
@@ -265,10 +268,6 @@ public class PlayerActivity extends AppCompatActivity {
     }
   }
 
-  private void showQualityDialog() {
-    QualityPicker.show(this, PlayerHolder.get(this));
-  }
-
   private void refreshTitle() {
     ChannelQueue.Channel c = ChannelQueue.current();
     titleView.setText(c == null ? "" : c.title);
@@ -288,32 +287,6 @@ public class PlayerActivity extends AppCompatActivity {
     finish();
   }
 
-  private String explain(PlaybackException e) {
-    Throwable cause = e.getCause();
-    if (cause instanceof HttpDataSource.InvalidResponseCodeException) {
-      return getString(R.string.err_http, ((HttpDataSource.InvalidResponseCodeException) cause).responseCode);
-    }
-    switch (e.errorCode) {
-      case PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED:
-      case PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT:
-      case PlaybackException.ERROR_CODE_IO_CLEARTEXT_NOT_PERMITTED:
-        return getString(R.string.err_net);
-      case PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS:
-      case PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND:
-        return getString(R.string.err_gone);
-      case PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED:
-      case PlaybackException.ERROR_CODE_PARSING_MANIFEST_MALFORMED:
-      case PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED:
-      case PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED:
-      case PlaybackException.ERROR_CODE_DECODER_INIT_FAILED:
-      case PlaybackException.ERROR_CODE_DECODING_FAILED:
-      case PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED:
-        return getString(R.string.err_format);
-      default:
-        return getString(R.string.err_generic);
-    }
-  }
-
   private void showError(PlaybackException e) {
     if (e.errorCode == PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW) {
       // The live stream ran ahead: jump to the live edge and try again.
@@ -322,9 +295,16 @@ public class PlayerActivity extends AppCompatActivity {
       p.prepare();
       return;
     }
-    errorText.setText(explain(e) + "\n\n" + e.getErrorCodeName());
+    errorText.setText(PlayerErrors.explain(this, e) + "\n\n" + e.getErrorCodeName());
     errorBox.setVisibility(View.VISIBLE);
     view.showController();
+  }
+
+  /** Телефон повернули в книжную ориентацию: полный экран закрывается, канал играет во вкладке «Плеер». */
+  @Override
+  public void onConfigurationChanged(Configuration c) {
+    super.onConfigurationChanged(c);
+    if (c.orientation == Configuration.ORIENTATION_PORTRAIT && !isInPictureInPictureMode()) closePlayer();
   }
 
   @Override
@@ -344,6 +324,12 @@ public class PlayerActivity extends AppCompatActivity {
     updateLiveUi();
     PlaybackException pending = p.getPlayerError();
     if (pending != null) showError(pending);
+    else if (resumeOnStart) {
+      // Эфир за время паузы ушёл вперёд: продолжаем с «сейчас».
+      p.seekToDefaultPosition();
+      p.play();
+    }
+    resumeOnStart = false;
   }
 
   @Override
@@ -351,7 +337,10 @@ public class PlayerActivity extends AppCompatActivity {
     super.onStop();
     ExoPlayer p = PlayerHolder.get(this);
     p.removeListener(listener);
-    if (!isFinishing()) p.pause(); // sent to the background: no background playback and no notification
+    if (!isFinishing() && p.isPlaying()) { // sent to the background: no background playback and no notification
+      p.pause();
+      resumeOnStart = true;
+    }
     view.setPlayer(null);
   }
 

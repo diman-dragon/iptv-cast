@@ -48,7 +48,7 @@ ok('check button appears, playlist shows in the Library (opened inside)', q('.ch
 q('.channels .item')[0].click(); await wait(120);
 ok('tap on a channel opens the Player tab and plays in its window (not full screen)', getScreen() === 'player' && plays.at(-1).video === false && plays.at(-1).url === 'http://a/1.m3u8', [getScreen(), plays.at(-1)]);
 ok('Player tab shows the guide block under the buttons', q('.player')[0].children.length === 3 && !q('.guide')[0].hidden && /No guide for this channel/.test(q('.guide')[0].textContent), q('.guide')[0]?.textContent);
-ok('About mentions the DataLaw project and carries the mark', /DataLaw IPTV/.test(q('.about-name')[0].textContent) && /DataLaw/.test(q('.about-text')[0].textContent) && !!q('.about-ico svg path').length && /DataLaw/.test(q('.about-tag')[0].textContent), q('.about-text')[0]?.textContent);
+ok('About mentions the DataLaw project and carries the mark', /DL-IPTV/.test(q('.about-name')[0].textContent) && /DataLaw/.test(q('.about-text')[0].textContent) && !!q('.about-ico svg path').length && /DataLaw/.test(q('.about-tag')[0].textContent), q('.about-text')[0]?.textContent);
 // сбросить выбранный канал, чтобы дальше проверять «пустой» плеер
 { const S = pb.getPlayback(); S.channel = null; S.playing = false; S.loading = false; S.list = []; plays.length = 0; document.dispatchEvent(new w.Event('langchange')); navigate('library'); await wait(50); }
 // назад к списку

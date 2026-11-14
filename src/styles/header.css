@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: env(safe-area-inset-top) 12px 0 0;
+  padding: env(safe-area-inset-top) calc(12px + env(safe-area-inset-right, 0px)) 0 env(safe-area-inset-left, 0px);
   background: var(--bg);
   border-bottom: 1px solid var(--line);
 }

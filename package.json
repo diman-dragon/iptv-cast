@@ -1,6 +1,6 @@
 {
-  "name": "iptv-cast",
-  "version": "0.4.3",
+  "name": "dl-iptv",
+  "version": "0.4.4",
   "private": true,
   "type": "module",
   "scripts": {
